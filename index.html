@@ -584,7 +584,12 @@ async function initFirebase() {
       if (data) {
         const wasFirst = firstLoad;
         firstLoad = false;
-        state.teams = data.teams || DEFAULT_TEAMS;
+        // Firebase returns object keys as strings — normalize to number keys
+        const rawTeams = data.teams || DEFAULT_TEAMS;
+        state.teams = {};
+        [1,2,3].forEach(t => {
+          state.teams[t] = rawTeams[t] || rawTeams[String(t)] || DEFAULT_TEAMS[t] || [];
+        });
         state.races = data.races || DEFAULT_RACES;
         state.scores = data.scores || {};
         state.nextRaceId = data.nextRaceId || 100;
@@ -990,33 +995,35 @@ window.checkRaceStarters = function(raceId, raceName) {
   const year = new Date().getFullYear();
   const pcsUrl = `https://www.procyclingstats.com/race/${slug || raceName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}/${year}/startlist`;
 
-  // Build checklist grouped by team
   const teamColors = { 1: '#1a6e3c', 2: '#1a3d6e', 3: '#6e1a1a' };
+
+  // Firebase stores keys as strings — always coerce to string when reading
   let checklistHtml = '';
   [1,2,3].forEach(t => {
-    const riders = state.teams[t] || [];
+    // Try both number and string key
+    const riders = state.teams[t] || state.teams[String(t)] || DEFAULT_TEAMS[t] || [];
     if (!riders.length) return;
-    checklistHtml += `
-      <div style="margin-bottom:16px">
-        <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:16px;
-                    color:#fff;background:${teamColors[t]};padding:6px 12px;border-radius:3px;
-                    margin-bottom:6px;display:inline-block;">Team ${t}</div>
-        ${riders.map(r => {
-          const id = 'chk_' + r.replace(/[^a-zA-Z0-9]/g,'_');
-          return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
-            <input type="checkbox" id="${id}" 
-                   style="accent-color:${teamColors[t]};width:16px;height:16px;flex-shrink:0;cursor:pointer;"
-                   onchange="updateStarterCount()">
-            <label for="${id}" style="font-size:13px;cursor:pointer;font-weight:500">${r}</label>
-          </div>`;
-        }).join('')}
+    const bg = teamColors[t];
+    checklistHtml += `<div style="margin-bottom:16px">
+      <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:16px;
+                  color:#fff;background:${bg};padding:6px 12px;border-radius:3px;
+                  margin-bottom:6px;display:inline-block;">Team ${t}</div>`;
+    riders.forEach(r => {
+      const id = 'chk_' + r.replace(/[^a-zA-Z0-9]/g,'_');
+      checklistHtml += `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
+        <input type="checkbox" id="${id}"
+               style="accent-color:${bg};width:16px;height:16px;flex-shrink:0;cursor:pointer;"
+               onchange="updateStarterCount()">
+        <label for="${id}" style="font-size:13px;cursor:pointer;font-weight:500">${r}</label>
       </div>`;
+    });
+    checklistHtml += `</div>`;
   });
 
-  openModal(`🚴 Starters: ${raceName}`, `
+  const modalBody = `
     <div style="margin-bottom:20px;padding:14px 16px;background:var(--surface2);border-radius:4px;border-left:3px solid var(--accent);">
       <p style="font-size:13px;line-height:1.6;margin-bottom:10px">
-        Open de startlijst op ProcyclingStats, kijk welke van jouw renners er staan 
+        Open de startlijst op ProcyclingStats, kijk welke van jouw renners er staan
         en vink ze hieronder aan. De teller houdt bij hoeveel je hebt aangevinkt.
       </p>
       <a href="${pcsUrl}" target="_blank" rel="noopener"
@@ -1026,15 +1033,14 @@ window.checkRaceStarters = function(raceId, raceName) {
         ↗ Open startlijst op ProcyclingStats
       </a>
     </div>
-
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
                    text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>
       <span id="starter-count" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent)">0 starters</span>
     </div>
+    ${checklistHtml}`;
 
-    ${checklistHtml}
-  `);
+  openModal(`🚴 Starters: ${raceName}`, modalBody);
 };
 
 window.updateStarterCount = function() {
