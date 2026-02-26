@@ -452,7 +452,7 @@
           <option value="3">Team 3</option>
         </select>
         <button class="btn-primary" onclick="loadAllNews()" id="news-reload-btn" style="padding:8px 18px;font-size:13px;">
-          🔄 Nieuws laden
+          🔄 Nieuws laden (laatste 2 weken)
         </button>
       </div>
     </div>
@@ -465,7 +465,7 @@
 
     <div id="news-feed" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;">
       <div class="empty-state" style="grid-column:1/-1">
-        Klik op "Nieuws laden" om het laatste nieuws van alle renners op te halen.
+        Klik op "Nieuws laden" om het nieuws van de afgelopen 2 weken van alle renners op te halen.
       </div>
     </div>
   </div>
@@ -1056,7 +1056,11 @@ let newsLoaded = false;
 async function fetchRiderRSS(riderName) {
   if (NEWS_CACHE[riderName]) return NEWS_CACHE[riderName];
 
-  const query = encodeURIComponent('"' + riderName.split(' ').slice(0,2).join(' ') + '" wielrenner');
+  // Build name: take first 2 parts (LASTNAME Firstname → search both)
+  const nameParts = riderName.trim().split(/\s+/);
+  const searchName = nameParts.slice(0,2).join(' ');
+  // Add "when:14d" to limit to last 14 days
+  const query = encodeURIComponent('"' + searchName + '" wielrenner when:14d');
   const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=nl&gl=NL&ceid=NL:nl`;
   const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
 
