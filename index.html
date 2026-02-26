@@ -1043,7 +1043,10 @@ function matchesSlug(slug, pouleName) {
 
 window.checkRaceStarters = async function(raceId, raceName) {
   const slug = PCS_SLUGS[raceName];
-  const year = new Date().getFullYear();
+  const race = (state.races || []).find(r => r.id === raceId);
+  // Prefer race year from configured date (e.g. "28 feb 2026"); fallback to current year.
+  const yearMatch = (race?.date || '').match(/\b(20\d{2})\b/);
+  const year = yearMatch ? parseInt(yearMatch[1], 10) : new Date().getFullYear();
   const pcsUrl = `https://www.procyclingstats.com/race/${slug || raceName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}/${year}/startlist`;
 
   openModal(`🚴 Starters: ${raceName}`,
@@ -1078,8 +1081,6 @@ window.checkRaceStarters = async function(raceId, raceName) {
       if (pcsRiderSlugs.length > 20) { fetchOk = true; break; }
     } catch(e) { /* try next proxy */ }
   }
-
-  const teamColors = { 1: '#1a6e3c', 2: '#1a3d6e', 3: '#6e1a1a' };
 
   if (fetchOk) {
     // Match poule riders against PCS slugs
@@ -1178,10 +1179,6 @@ window.checkRaceStarters = async function(raceId, raceName) {
 
 window.updateStarterCount = function() {
   const checked = document.querySelectorAll('#modal input[type=checkbox]:checked').length;
-  const el = document.getElementById('starter-count');
-  if (el) el.textContent = checked + (checked === 1 ? ' starter' : ' starters');
-};
-
   const el = document.getElementById('starter-count');
   if (el) el.textContent = checked + (checked === 1 ? ' starter' : ' starters');
 };
