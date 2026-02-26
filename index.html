@@ -708,7 +708,7 @@ function renderTeams() {
   if (!g) return;
   g.innerHTML = '';
   [1,2,3].forEach(t => {
-    const riders = state.teams[t] || [];
+    const riders = getTeamRiders(t);
     const total = teamTotalPts(t);
     let html = `<div class="team-card">
       <div class="team-header t${t}"><span>Team ${t}</span><span class="team-total">${total} pts</span></div>`;
@@ -790,7 +790,7 @@ function renderManage() {
   [1,2,3].forEach(t => {
     const list = document.getElementById(`manage-t${t}-list`);
     if (!list) return;
-    const riders = state.teams[t] || [];
+    const riders = getTeamRiders(t);
     list.innerHTML = riders.map((r,i) =>
       `<div class="score-row">
         <strong style="font-size:12px">${r}</strong>
@@ -822,7 +822,7 @@ function populateSelects() {
 
   riderSel.innerHTML = '<option value="">Kies renner...</option>';
   [1,2,3].forEach(t => {
-    (state.teams[t]||[]).forEach(r => {
+    getTeamRiders(t).forEach(r => {
       riderSel.innerHTML += `<option value="${r}|${t}">${r} (Team ${t})</option>`;
     });
   });
@@ -865,13 +865,13 @@ window.addRider = async function(teamNum) {
   const input = document.getElementById(`new-rider-t${teamNum}`);
   const name = input.value.trim().toUpperCase();
   if (!name) return;
-  const riders = [...(state.teams[teamNum]||[]), name];
+  const riders = [...getTeamRiders(teamNum), name];
   await set(ref(db, `wielerpoule/teams/${teamNum}`), riders);
   input.value = '';
 };
 
 window.removeRider = async function(teamNum, idx) {
-  const riders = [...(state.teams[teamNum]||[])];
+  const riders = [...getTeamRiders(teamNum)];
   riders.splice(idx, 1);
   await set(ref(db, `wielerpoule/teams/${teamNum}`), riders);
 };
@@ -999,6 +999,15 @@ const PCS_SLUGS = {
   'WK (tijdrit)': 'uci-road-world-championships',
 };
 
+// Helper: always returns a clean array of riders for a team
+function getTeamRiders(t) {
+  let r = state.teams[t] || state.teams[String(t)] || [];
+  if (!Array.isArray(r)) r = Object.values(r).filter(v => typeof v === 'string');
+  r = r.filter(v => typeof v === 'string' && v.trim().length > 0);
+  if (r.length < 5) r = DEFAULT_TEAMS[t] || [];
+  return r;
+}
+
 window.checkRaceStarters = function(raceId, raceName) {
   const slug = PCS_SLUGS[raceName];
   const year = new Date().getFullYear();
@@ -1006,12 +1015,9 @@ window.checkRaceStarters = function(raceId, raceName) {
 
   const teamColors = { 1: '#1a6e3c', 2: '#1a3d6e', 3: '#6e1a1a' };
 
-  // Firebase stores keys as strings — always coerce to string when reading
   let checklistHtml = '';
   [1,2,3].forEach(t => {
-    // Try both number and string key
-    const riders = state.teams[t] || state.teams[String(t)] || DEFAULT_TEAMS[t] || [];
-    if (!riders.length) return;
+    const riders = getTeamRiders(t);
     const bg = teamColors[t];
     checklistHtml += `<div style="margin-bottom:16px">
       <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:16px;
@@ -1114,7 +1120,7 @@ async function fetchRiderRSS(riderName) {
 
 function getRiderTeam(name) {
   for (const t of [1,2,3]) {
-    if ((state.teams[t]||[]).includes(name)) return t;
+    if (getTeamRiders(t).includes(name)) return t;
   }
   return 1;
 }
@@ -1157,7 +1163,7 @@ window.loadAllNews = async function() {
 
   // Gather all riders
   const allRiders = [];
-  [1,2,3].forEach(t => (state.teams[t]||[]).forEach(n => allRiders.push({name:n, team:t})));
+  [1,2,3].forEach(t => getTeamRiders(t).forEach(n => allRiders.push({name:n, team:t})));
 
   if (allRiders.length === 0) {
     feed.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Geen renners gevonden. Voeg eerst renners toe via Beheer.</div>';
