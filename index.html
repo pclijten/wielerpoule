@@ -395,13 +395,6 @@
   <!-- MANAGE -->
   <div class="tab-content" id="tab-manage">
     <div class="section-title">Renners beheren</div>
-    <div style="margin-bottom:20px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-      <div>
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;margin-bottom:4px;">Teams resetten naar standaard</div>
-        <div style="font-size:12px;color:var(--muted);">Zet alle 30 renners terug naar de originele teamindeling uit het Excel-bestand.</div>
-      </div>
-      <button class="btn-primary" onclick="resetTeamsToDefault()" style="background:var(--accent2);white-space:nowrap;">↺ Reset teams naar origineel</button>
-    </div>
     <div class="manage-grid">
       <div class="score-card">
         <div class="score-card-header t1"><span class="score-card-name">Team 1</span></div>
@@ -459,7 +452,7 @@
           <option value="3">Team 3</option>
         </select>
         <button class="btn-primary" onclick="loadAllNews()" id="news-reload-btn" style="padding:8px 18px;font-size:13px;">
-          🔄 Nieuws laden (laatste 2 weken)
+          🔄 Nieuws laden
         </button>
       </div>
     </div>
@@ -472,7 +465,7 @@
 
     <div id="news-feed" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;">
       <div class="empty-state" style="grid-column:1/-1">
-        Klik op "Nieuws laden" om het nieuws van de afgelopen 2 weken van alle renners op te halen.
+        Klik op "Nieuws laden" om het laatste nieuws van alle renners op te halen.
       </div>
     </div>
   </div>
@@ -591,14 +584,7 @@ async function initFirebase() {
       if (data) {
         const wasFirst = firstLoad;
         firstLoad = false;
-        // Firebase returns arrays as objects with string keys — convert back to proper arrays
-        const rawTeams = data.teams || DEFAULT_TEAMS;
-        state.teams = {};
-        [1,2,3].forEach(t => {
-          const raw = rawTeams[t] || rawTeams[String(t)] || DEFAULT_TEAMS[t] || [];
-          // If Firebase returned a sparse object instead of array, use Object.values()
-          state.teams[t] = Array.isArray(raw) ? raw : Object.values(raw).filter(v => typeof v === 'string');
-        });
+        state.teams = data.teams || DEFAULT_TEAMS;
         state.races = data.races || DEFAULT_RACES;
         state.scores = data.scores || {};
         state.nextRaceId = data.nextRaceId || 100;
@@ -708,7 +694,7 @@ function renderTeams() {
   if (!g) return;
   g.innerHTML = '';
   [1,2,3].forEach(t => {
-    const riders = getTeamRiders(t);
+    const riders = state.teams[t] || [];
     const total = teamTotalPts(t);
     let html = `<div class="team-card">
       <div class="team-header t${t}"><span>Team ${t}</span><span class="team-total">${total} pts</span></div>`;
@@ -790,7 +776,7 @@ function renderManage() {
   [1,2,3].forEach(t => {
     const list = document.getElementById(`manage-t${t}-list`);
     if (!list) return;
-    const riders = getTeamRiders(t);
+    const riders = state.teams[t] || [];
     list.innerHTML = riders.map((r,i) =>
       `<div class="score-row">
         <strong style="font-size:12px">${r}</strong>
@@ -822,7 +808,7 @@ function populateSelects() {
 
   riderSel.innerHTML = '<option value="">Kies renner...</option>';
   [1,2,3].forEach(t => {
-    getTeamRiders(t).forEach(r => {
+    (state.teams[t]||[]).forEach(r => {
       riderSel.innerHTML += `<option value="${r}|${t}">${r} (Team ${t})</option>`;
     });
   });
@@ -865,13 +851,13 @@ window.addRider = async function(teamNum) {
   const input = document.getElementById(`new-rider-t${teamNum}`);
   const name = input.value.trim().toUpperCase();
   if (!name) return;
-  const riders = [...getTeamRiders(teamNum), name];
+  const riders = [...(state.teams[teamNum]||[]), name];
   await set(ref(db, `wielerpoule/teams/${teamNum}`), riders);
   input.value = '';
 };
 
 window.removeRider = async function(teamNum, idx) {
-  const riders = [...getTeamRiders(teamNum)];
+  const riders = [...(state.teams[teamNum]||[])];
   riders.splice(idx, 1);
   await set(ref(db, `wielerpoule/teams/${teamNum}`), riders);
 };
@@ -999,189 +985,60 @@ const PCS_SLUGS = {
   'WK (tijdrit)': 'uci-road-world-championships',
 };
 
-// Helper: always returns a clean array of riders for a team
-function getTeamRiders(t) {
-  let r = state.teams[t] || state.teams[String(t)] || [];
-  if (!Array.isArray(r)) r = Object.values(r).filter(v => typeof v === 'string');
-  r = r.filter(v => typeof v === 'string' && v.trim().length > 0);
-  if (r.length < 5) r = DEFAULT_TEAMS[t] || [];
-  return r;
-}
-
-// Normalize string: lowercase, remove accents, keep only a-z and spaces
-function normStr(s) {
-  return (s||'').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-    .replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();
-}
-
-// Extract the last name from a poule name like "VAN DER POEL Mathieu" or "MILAN Jonathan"
-// Poule format: ALL-CAPS surname(s) + Title-case firstname(s)
-// Strategy: take all leading uppercase words as surname
-function getSurname(pouleName) {
-  const parts = pouleName.trim().split(/\s+/);
-  const surnameParts = [];
-  for (const p of parts) {
-    // A word is part of the surname if it's all uppercase (or short connector like "de","van")
-    if (p === p.toUpperCase()) surnameParts.push(p);
-    else break;
-  }
-  return normStr(surnameParts.join(' '));
-}
-
-// Match a PCS rider slug against a poule name
-// PCS slugs look like: "mathieu-van-der-poel", "soren-waerenskjold", "vincenzo-albanese"
-// We check that ALL parts of the surname appear in the slug
-function matchesSlug(slug, pouleName) {
-  const slugNorm = slug.replace(/-/g,' ');
-  const surname = getSurname(pouleName);
-  if (!surname || surname.length < 3) return false;
-  // Every word in the surname must appear in the slug
-  const surnameWords = surname.split(' ').filter(w => w.length >= 2);
-  return surnameWords.every(w => slugNorm.includes(w));
-}
-
-window.checkRaceStarters = async function(raceId, raceName) {
+window.checkRaceStarters = function(raceId, raceName) {
   const slug = PCS_SLUGS[raceName];
   const year = new Date().getFullYear();
   const pcsUrl = `https://www.procyclingstats.com/race/${slug || raceName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}/${year}/startlist`;
 
-  openModal(`🚴 Starters: ${raceName}`,
-    `<div class="loading"><div class="spinner"></div> Startlijst ophalen van ProcyclingStats...</div>`);
-
-  // Fetch PCS startlist HTML via CORS proxy
-  let pcsRiderSlugs = [];
-  let fetchOk = false;
-
-  const proxies = [
-    `https://corsproxy.io/?${encodeURIComponent(pcsUrl)}`,
-    `https://api.allorigins.win/get?url=${encodeURIComponent(pcsUrl)}`
-  ];
-
-  for (const proxyUrl of proxies) {
-    try {
-      const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
-      if (!resp.ok) continue;
-      let html = '';
-      if (proxyUrl.includes('allorigins')) {
-        const j = await resp.json();
-        html = j.contents || '';
-      } else {
-        html = await resp.text();
-      }
-      if (html.length < 3000) continue;
-
-      // Extract rider slugs: href="rider/mathieu-van-der-poel" or href="../rider/..."
-      const matches = [...html.matchAll(/href=["'][^"']*\/rider\/([a-z0-9][a-z0-9\-]+)["']/g)];
-      pcsRiderSlugs = [...new Set(matches.map(m => m[1]))];
-
-      if (pcsRiderSlugs.length > 20) { fetchOk = true; break; }
-    } catch(e) { /* try next proxy */ }
-  }
-
+  // Build checklist grouped by team
   const teamColors = { 1: '#1a6e3c', 2: '#1a3d6e', 3: '#6e1a1a' };
-
-  if (fetchOk) {
-    // Match poule riders against PCS slugs
-    const starters = [];
-    const notStarters = [];
-
-    [1,2,3].forEach(t => {
-      getTeamRiders(t).forEach(riderName => {
-        const found = pcsRiderSlugs.some(s => matchesSlug(s, riderName));
-        if (found) starters.push({ name: riderName, team: t });
-        else notStarters.push({ name: riderName, team: t });
-      });
-    });
-
-    let html = `
-      <div style="margin-bottom:16px;padding:12px 14px;background:var(--surface2);border-radius:4px;
-                  display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:13px;color:var(--muted)">Gevonden op startlijst ProcyclingStats</span>
-        <a href="${pcsUrl}" target="_blank"
-           style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">
-          ↗ Bekijk volledige lijst
-        </a>
-      </div>`;
-
-    if (starters.length === 0) {
-      html += `<div class="empty-state">Geen van jouw renners gevonden op de startlijst.</div>`;
-    } else {
-      html += `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">
-        <strong style="color:var(--accent);font-size:18px">${starters.length}</strong> renner(s) van jouw poule starten:
-      </p><div class="starters-list">`;
-      starters.forEach(s => {
-        html += `<span class="starter-chip team${s.team}" style="font-size:13px;padding:7px 14px;">
-          ${s.name}
-          <span style="opacity:0.5;font-size:10px;margin-left:4px">T${s.team}</span>
-        </span>`;
-      });
-      html += `</div>`;
-    }
-
-    if (notStarters.length > 0) {
-      html += `<details style="margin-top:16px;">
-        <summary style="font-size:12px;color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">
-          Overige ${notStarters.length} renners (niet gevonden op startlijst)
-        </summary>
-        <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.8">
-          ${notStarters.map(s => s.name).join(' &middot; ')}
-        </p>
-      </details>`;
-    }
-
-    document.getElementById('modal-body').innerHTML = html;
-
-  } else {
-    // Proxy failed — show manual checklist
-    const teamColors2 = { 1: '#1a6e3c', 2: '#1a3d6e', 3: '#6e1a1a' };
-    let checklistHtml = '';
-    [1,2,3].forEach(t => {
-      const riders = getTeamRiders(t);
-      const bg = teamColors2[t];
-      checklistHtml += `<div style="margin-bottom:16px">
+  let checklistHtml = '';
+  [1,2,3].forEach(t => {
+    const riders = state.teams[t] || [];
+    if (!riders.length) return;
+    checklistHtml += `
+      <div style="margin-bottom:16px">
         <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:16px;
-                    color:#fff;background:${bg};padding:6px 12px;border-radius:3px;
-                    margin-bottom:6px;display:inline-block;">Team ${t}</div>`;
-      riders.forEach(r => {
-        const id = 'chk_' + r.replace(/[^a-zA-Z0-9]/g,'_');
-        checklistHtml += `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
-          <input type="checkbox" id="${id}"
-                 style="accent-color:${bg};width:16px;height:16px;flex-shrink:0;cursor:pointer;"
-                 onchange="updateStarterCount()">
-          <label for="${id}" style="font-size:13px;cursor:pointer;font-weight:500">${r}</label>
-        </div>`;
-      });
-      checklistHtml += `</div>`;
-    });
+                    color:#fff;background:${teamColors[t]};padding:6px 12px;border-radius:3px;
+                    margin-bottom:6px;display:inline-block;">Team ${t}</div>
+        ${riders.map(r => {
+          const id = 'chk_' + r.replace(/[^a-zA-Z0-9]/g,'_');
+          return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
+            <input type="checkbox" id="${id}" 
+                   style="accent-color:${teamColors[t]};width:16px;height:16px;flex-shrink:0;cursor:pointer;"
+                   onchange="updateStarterCount()">
+            <label for="${id}" style="font-size:13px;cursor:pointer;font-weight:500">${r}</label>
+          </div>`;
+        }).join('')}
+      </div>`;
+  });
 
-    document.getElementById('modal-body').innerHTML = `
-      <div style="margin-bottom:16px;padding:12px 14px;background:rgba(196,52,26,0.1);border:1px solid var(--accent2);border-radius:4px;">
-        <p style="font-size:13px;color:var(--muted);margin-bottom:10px">
-          Automatisch ophalen mislukt. Open de startlijst en vink handmatig aan:
-        </p>
-        <a href="${pcsUrl}" target="_blank" rel="noopener"
-           style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;
-                  padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
-                  letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none;">
-          ↗ Open startlijst op ProcyclingStats
-        </a>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-        <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
-                     text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>
-        <span id="starter-count" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent)">0 starters</span>
-      </div>
-      ${checklistHtml}`;
-  }
+  openModal(`🚴 Starters: ${raceName}`, `
+    <div style="margin-bottom:20px;padding:14px 16px;background:var(--surface2);border-radius:4px;border-left:3px solid var(--accent);">
+      <p style="font-size:13px;line-height:1.6;margin-bottom:10px">
+        Open de startlijst op ProcyclingStats, kijk welke van jouw renners er staan 
+        en vink ze hieronder aan. De teller houdt bij hoeveel je hebt aangevinkt.
+      </p>
+      <a href="${pcsUrl}" target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;
+                padding:9px 18px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
+                letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none;">
+        ↗ Open startlijst op ProcyclingStats
+      </a>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
+                   text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>
+      <span id="starter-count" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent)">0 starters</span>
+    </div>
+
+    ${checklistHtml}
+  `);
 };
 
 window.updateStarterCount = function() {
   const checked = document.querySelectorAll('#modal input[type=checkbox]:checked').length;
-  const el = document.getElementById('starter-count');
-  if (el) el.textContent = checked + (checked === 1 ? ' starter' : ' starters');
-};
-
   const el = document.getElementById('starter-count');
   if (el) el.textContent = checked + (checked === 1 ? ' starter' : ' starters');
 };
@@ -1199,11 +1056,7 @@ let newsLoaded = false;
 async function fetchRiderRSS(riderName) {
   if (NEWS_CACHE[riderName]) return NEWS_CACHE[riderName];
 
-  // Build name: take first 2 parts (LASTNAME Firstname → search both)
-  const nameParts = riderName.trim().split(/\s+/);
-  const searchName = nameParts.slice(0,2).join(' ');
-  // Add "when:14d" to limit to last 14 days
-  const query = encodeURIComponent('"' + searchName + '" wielrenner when:14d');
+  const query = encodeURIComponent('"' + riderName.split(' ').slice(0,2).join(' ') + '" wielrenner');
   const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=nl&gl=NL&ceid=NL:nl`;
   const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
 
@@ -1242,7 +1095,7 @@ async function fetchRiderRSS(riderName) {
 
 function getRiderTeam(name) {
   for (const t of [1,2,3]) {
-    if (getTeamRiders(t).includes(name)) return t;
+    if ((state.teams[t]||[]).includes(name)) return t;
   }
   return 1;
 }
@@ -1285,7 +1138,7 @@ window.loadAllNews = async function() {
 
   // Gather all riders
   const allRiders = [];
-  [1,2,3].forEach(t => getTeamRiders(t).forEach(n => allRiders.push({name:n, team:t})));
+  [1,2,3].forEach(t => (state.teams[t]||[]).forEach(n => allRiders.push({name:n, team:t})));
 
   if (allRiders.length === 0) {
     feed.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Geen renners gevonden. Voeg eerst renners toe via Beheer.</div>';
@@ -1344,13 +1197,6 @@ window.filterNews = function() {
     const team = card.dataset.team;
     card.classList.toggle('news-hidden', filter !== 'all' && team !== filter);
   });
-};
-
-
-window.resetTeamsToDefault = async function() {
-  if (!confirm('Weet je zeker dat je alle teams wilt resetten naar de originele 30 renners? Dit verwijdert eventuele wijzigingen.')) return;
-  await set(ref(db, 'wielerpoule/teams'), DEFAULT_TEAMS);
-  alert('Teams zijn gereset naar de originele indeling!');
 };
 
 // ═══════════════════════════════════
