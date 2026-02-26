@@ -268,6 +268,41 @@
     nav { width: 100%; overflow-x: auto; }
     .logo { font-size: 38px; }
   }
+
+  /* NEWS FEED */
+  .news-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .news-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .news-card-header {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .news-card-header.t1 { background: rgba(26,110,60,0.25); border-left: 3px solid #1a6e3c; }
+  .news-card-header.t2 { background: rgba(26,61,110,0.25); border-left: 3px solid #1a3d6e; }
+  .news-card-header.t3 { background: rgba(110,26,26,0.25); border-left: 3px solid #6e1a1a; }
+  .news-card-rider { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 1px; flex: 1; }
+  .news-card-team { font-size: 10px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; color: var(--muted); }
+  .news-card-body { padding: 0; flex: 1; display: flex; flex-direction: column; }
+  .news-article { padding: 11px 14px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+  .news-article:last-child { border-bottom: none; }
+  .news-article a { color: var(--text); text-decoration: none; font-size: 13px; font-weight: 500; line-height: 1.4; transition: color 0.15s; }
+  .news-article a:hover { color: var(--accent); }
+  .news-article-meta { font-size: 11px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
+  .news-card-loading { padding: 20px 14px; color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 8px; }
+  .news-card-empty { padding: 16px 14px; color: var(--muted); font-size: 12px; font-style: italic; }
+  .news-card-error { padding: 12px 14px; color: var(--accent2); font-size: 11px; }
+  .news-hidden { display: none !important; }
+
 </style>
 </head>
 <body>
@@ -293,6 +328,7 @@
     <button onclick="showTab('races', this)">Wedstrijden</button>
     <button onclick="showTab('scores', this)">Puntenstand</button>
     <button onclick="showTab('manage', this)">Beheer</button>
+    <button onclick="showTab('news', this)">Nieuws</button>
   </nav>
 </header>
 
@@ -401,6 +437,39 @@
     </div>
     <div id="manage-races-list"></div>
   </div>
+
+  <!-- NEWS -->
+  <div class="tab-content" id="tab-news">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+      <div class="section-title" style="margin-bottom:0">Renners Nieuws</div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <select id="news-team-filter" onchange="filterNews()" 
+          style="background:var(--surface2);border:1px solid var(--border);color:var(--text);
+                 padding:8px 12px;border-radius:3px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;">
+          <option value="all">Alle teams</option>
+          <option value="1">Team 1</option>
+          <option value="2">Team 2</option>
+          <option value="3">Team 3</option>
+        </select>
+        <button class="btn-primary" onclick="loadAllNews()" id="news-reload-btn" style="padding:8px 18px;font-size:13px;">
+          🔄 Nieuws laden
+        </button>
+      </div>
+    </div>
+
+    <div id="news-status" style="display:none;padding:14px 18px;background:var(--surface);border:1px solid var(--border);
+         border-radius:4px;margin-bottom:20px;font-size:13px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;
+         letter-spacing:1px;">
+      Bezig met laden...
+    </div>
+
+    <div id="news-feed" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;">
+      <div class="empty-state" style="grid-column:1/-1">
+        Klik op "Nieuws laden" om het laatste nieuws van alle renners op te halen.
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- MODAL -->
@@ -828,51 +897,62 @@ window.closeModalOverlay = function(e) {
 };
 
 // ═══════════════════════════════════
-// NIEUWS — via Google News
+// NIEUWS
 // ═══════════════════════════════════
 window.fetchRiderNews = function(riderName) {
-  // Open Google News search for this rider in a new tab — always works, no API needed
-  const query = encodeURIComponent(riderName + ' wielrenner 2026');
-  const newsUrl = `https://news.google.com/search?q=${query}&hl=nl&gl=NL&ceid=NL:nl`;
-  
+  const q = encodeURIComponent(riderName + ' wielrenner 2026');
+  const googleNews = `https://news.google.com/search?q=${q}&hl=nl&gl=NL&ceid=NL:nl`;
+  const wielerflits = `https://www.wielerflits.nl/?s=${encodeURIComponent(riderName)}`;
+  // Build first+last name for PCS (poule format: "LASTNAME Firstname")
+  const parts = riderName.trim().split(/\s+/);
+  const pcsSlug = parts.map(p => p.toLowerCase()).join('-');
+  const pcsProfile = `https://www.procyclingstats.com/rider/${pcsSlug}`;
+
   openModal(`Nieuws: ${riderName}`, `
     <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
-      Klik op de knop om het laatste nieuws over <strong style="color:var(--text)">${riderName}</strong> 
-      te zoeken via Google News. Dit opent in een nieuw tabblad.
+      Klik op een link om het laatste nieuws te bekijken. Opent in een nieuw tabblad.
     </p>
-    <a href="${newsUrl}" target="_blank" rel="noopener"
-       style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;
-              padding:12px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
-              letter-spacing:2px;font-size:14px;border-radius:3px;text-decoration:none;margin-bottom:20px;">
-      📰 Open nieuws voor ${riderName}
-    </a>
-    <div style="border-top:1px solid var(--border);padding-top:16px">
-      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase">Snelle links:</p>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <a href="https://www.procyclingstats.com/rider/${riderName.toLowerCase().replace(/\s+/g,'-')}" target="_blank"
-           style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;
-                  border:1px solid var(--border);padding:5px 10px;border-radius:3px;text-decoration:none;">
-          ↗ ProcyclingStats profiel
-        </a>
-        <a href="https://www.cyclingarchives.com/nl/coureur.php?naam=${encodeURIComponent(riderName)}" target="_blank"
-           style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;
-                  border:1px solid var(--border);padding:5px 10px;border-radius:3px;text-decoration:none;">
-          ↗ CyclingArchives
-        </a>
-        <a href="https://www.wielerflits.nl/?s=${encodeURIComponent(riderName)}" target="_blank"
-           style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;
-                  border:1px solid var(--border);padding:5px 10px;border-radius:3px;text-decoration:none;">
-          ↗ Wielerflits
-        </a>
-      </div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <a href="${googleNews}" target="_blank" rel="noopener"
+         style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);
+                padding:14px 18px;border-radius:4px;text-decoration:none;transition:border-color 0.2s;"
+         onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <span style="font-size:22px">📰</span>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">Google News</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Laatste nieuwsberichten over ${riderName}</div>
+        </div>
+        <span style="margin-left:auto;color:var(--accent);font-size:18px">↗</span>
+      </a>
+      <a href="${wielerflits}" target="_blank" rel="noopener"
+         style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);
+                padding:14px 18px;border-radius:4px;text-decoration:none;transition:border-color 0.2s;"
+         onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <span style="font-size:22px">🚴</span>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">Wielerflits</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Nederlandstalig wielrennen nieuws</div>
+        </div>
+        <span style="margin-left:auto;color:var(--accent);font-size:18px">↗</span>
+      </a>
+      <a href="${pcsProfile}" target="_blank" rel="noopener"
+         style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);
+                padding:14px 18px;border-radius:4px;text-decoration:none;transition:border-color 0.2s;"
+         onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <span style="font-size:22px">📊</span>
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">ProcyclingStats</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Statistieken & rennersprofiel</div>
+        </div>
+        <span style="margin-left:auto;color:var(--accent);font-size:18px">↗</span>
+      </a>
     </div>
   `);
 };
 
 // ═══════════════════════════════════
-// STARTERS CHECK — via ProcyclingStats CORS proxy
+// STARTERS CHECK
 // ═══════════════════════════════════
-
 const PCS_SLUGS = {
   'Omloop het Nieuwsblad': 'omloop-het-nieuwsblad',
   'Strade Bianche': 'strade-bianche',
@@ -903,147 +983,222 @@ const PCS_SLUGS = {
   'GP Québec': 'gp-de-quebec',
   'GP Montréal': 'gp-de-montreal',
   'WK (tijdrit)': 'uci-road-world-championships',
-  'WK (wegwedstrijd)': 'uci-road-world-championships',
 };
 
-// Normalize name for matching: strip accents, lowercase, keep only letters+spaces
-function norm(s) {
-  return (s || '').toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z\s]/g, ' ')
-    .replace(/\s+/g, ' ').trim();
-}
-
-// Strict matching: ALL significant parts of poule name must appear in PCS slug
-function strictMatch(pcsSlug, pouleName) {
-  const pcs = pcsSlug.replace(/-/g, ' ');
-  const poule = norm(pouleName);
-  
-  // Split poule name into parts (words with 3+ chars)
-  const pouleParts = poule.split(/\s+/).filter(p => p.length >= 3);
-  if (pouleParts.length === 0) return false;
-  
-  // ALL parts of the poule name must be found in the PCS slug
-  return pouleParts.every(part => pcs.includes(part));
-}
-
-window.checkRaceStarters = async function(raceId, raceName) {
+window.checkRaceStarters = function(raceId, raceName) {
   const slug = PCS_SLUGS[raceName];
   const year = new Date().getFullYear();
-  const pcsUrl = slug 
-    ? `https://www.procyclingstats.com/race/${slug}/${year}/startlist`
-    : `https://www.procyclingstats.com/race/${raceName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}/${year}/startlist`;
+  const pcsUrl = `https://www.procyclingstats.com/race/${slug || raceName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}/${year}/startlist`;
 
-  openModal(`🚴 Starters: ${raceName}`, `<div class="loading"><div class="spinner"></div> Startlijst ophalen van ProcyclingStats...</div>`);
+  // Build checklist grouped by team
+  const teamColors = { 1: '#1a6e3c', 2: '#1a3d6e', 3: '#6e1a1a' };
+  let checklistHtml = '';
+  [1,2,3].forEach(t => {
+    const riders = state.teams[t] || [];
+    if (!riders.length) return;
+    checklistHtml += `
+      <div style="margin-bottom:16px">
+        <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:16px;
+                    color:#fff;background:${teamColors[t]};padding:6px 12px;border-radius:3px;
+                    margin-bottom:6px;display:inline-block;">Team ${t}</div>
+        ${riders.map(r => {
+          const id = 'chk_' + r.replace(/[^a-zA-Z0-9]/g,'_');
+          return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
+            <input type="checkbox" id="${id}" 
+                   style="accent-color:${teamColors[t]};width:16px;height:16px;flex-shrink:0;cursor:pointer;"
+                   onchange="updateStarterCount()">
+            <label for="${id}" style="font-size:13px;cursor:pointer;font-weight:500">${r}</label>
+          </div>`;
+        }).join('')}
+      </div>`;
+  });
 
-  const allRiders = [];
-  [1,2,3].forEach(t => (state.teams[t]||[]).forEach(n => allRiders.push({name: n, team: t})));
+  openModal(`🚴 Starters: ${raceName}`, `
+    <div style="margin-bottom:20px;padding:14px 16px;background:var(--surface2);border-radius:4px;border-left:3px solid var(--accent);">
+      <p style="font-size:13px;line-height:1.6;margin-bottom:10px">
+        Open de startlijst op ProcyclingStats, kijk welke van jouw renners er staan 
+        en vink ze hieronder aan. De teller houdt bij hoeveel je hebt aangevinkt.
+      </p>
+      <a href="${pcsUrl}" target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;
+                padding:9px 18px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
+                letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none;">
+        ↗ Open startlijst op ProcyclingStats
+      </a>
+    </div>
 
-  let pcsRiderSlugs = [];
-  let fetchOk = false;
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
+                   text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>
+      <span id="starter-count" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent)">0 starters</span>
+    </div>
 
-  // Try corsproxy.io first
-  try {
-    const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(pcsUrl)}`, 
-      { signal: AbortSignal.timeout(10000) });
-    if (r.ok) {
-      const html = await r.text();
-      if (html.length > 3000) {
-        // Extract rider slugs: href="rider/mathieu-van-der-poel"
-        const matches = [...html.matchAll(/href=["']rider\/([a-z0-9\-]+)["']/g)];
-        pcsRiderSlugs = [...new Set(matches.map(m => m[1]))];
-        fetchOk = pcsRiderSlugs.length > 10;
-      }
-    }
-  } catch(e) { /* try next */ }
-
-  // Try allorigins as fallback
-  if (!fetchOk) {
-    try {
-      const r2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(pcsUrl)}`,
-        { signal: AbortSignal.timeout(10000) });
-      if (r2.ok) {
-        const j = await r2.json();
-        const html = j.contents || '';
-        if (html.length > 3000) {
-          const matches = [...html.matchAll(/href=["']rider\/([a-z0-9\-]+)["']/g)];
-          pcsRiderSlugs = [...new Set(matches.map(m => m[1]))];
-          fetchOk = pcsRiderSlugs.length > 10;
-        }
-      }
-    } catch(e) { /* failed */ }
-  }
-
-  if (fetchOk && pcsRiderSlugs.length > 0) {
-    console.log(`PCS: found ${pcsRiderSlugs.length} unique rider slugs`);
-    console.log('Sample slugs:', pcsRiderSlugs.slice(0,5));
-
-    const starters = [];
-    const notFound = [];
-
-    allRiders.forEach(rider => {
-      // Check if ANY pcs slug matches ALL parts of the rider's poule name
-      const found = pcsRiderSlugs.some(slug => strictMatch(slug, rider.name));
-      if (found) starters.push(rider);
-      else notFound.push(rider.name);
-    });
-
-    renderStartersResult(raceName, starters, notFound, pcsUrl);
-  } else {
-    // Both proxies failed — show fallback
-    showStartersFallback(raceName, pcsUrl, allRiders);
-  }
+    ${checklistHtml}
+  `);
 };
 
-function renderStartersResult(raceName, starters, notFound, pcsUrl) {
-  let html = '';
-  if (starters.length === 0) {
-    html = `<div class="empty-state">Geen van jouw renners gevonden op de startlijst.<br>
-      <a href="${pcsUrl}" target="_blank" style="color:var(--accent);font-size:12px">↗ Controleer zelf op ProcyclingStats</a></div>`;
-  } else {
-    html += `<p style="font-size:13px;color:var(--muted);margin-bottom:14px">
-      <strong style="color:var(--accent)">${starters.length}</strong> van jouw 30 poule-renners starten in ${raceName}:
-    </p><div class="starters-list">`;
-    starters.forEach(s => {
-      html += `<span class="starter-chip team${s.team}">${s.name} <span style="opacity:0.55;font-size:10px">T${s.team}</span></span>`;
+window.updateStarterCount = function() {
+  const checked = document.querySelectorAll('#modal input[type=checkbox]:checked').length;
+  const el = document.getElementById('starter-count');
+  if (el) el.textContent = checked + (checked === 1 ? ' starter' : ' starters');
+};
+
+
+// ═══════════════════════════════════
+// NEWS FEED — Google News RSS
+// ═══════════════════════════════════
+
+// Google News RSS via CORS proxy
+// Format: https://news.google.com/rss/search?q=QUERY&hl=nl&gl=NL&ceid=NL:nl
+const NEWS_CACHE = {};
+let newsLoaded = false;
+
+async function fetchRiderRSS(riderName) {
+  if (NEWS_CACHE[riderName]) return NEWS_CACHE[riderName];
+
+  const query = encodeURIComponent('"' + riderName.split(' ').slice(0,2).join(' ') + '" wielrenner');
+  const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=nl&gl=NL&ceid=NL:nl`;
+  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+
+  try {
+    const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+    if (!resp.ok) throw new Error('proxy failed');
+    const json = await resp.json();
+    const xml = json.contents || '';
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml, 'text/xml');
+    const items = [...doc.querySelectorAll('item')].slice(0, 4);
+
+    const articles = items.map(item => {
+      const title = item.querySelector('title')?.textContent || '';
+      const link = item.querySelector('link')?.textContent || '';
+      const pubDate = item.querySelector('pubDate')?.textContent || '';
+      const source = item.querySelector('source')?.textContent || '';
+      // Format date
+      let dateStr = '';
+      try {
+        const d = new Date(pubDate);
+        dateStr = d.toLocaleDateString('nl-NL', { day:'numeric', month:'short', year:'numeric' });
+      } catch(e) {}
+      // Clean title (Google News adds source at end after " - ")
+      const cleanTitle = title.replace(/ - [^-]+$/, '').trim();
+      return { title: cleanTitle, link, date: dateStr, source };
     });
-    html += '</div>';
+
+    NEWS_CACHE[riderName] = articles;
+    return articles;
+  } catch(e) {
+    return null; // null = error
   }
-  html += `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
-    <a href="${pcsUrl}" target="_blank"
-       style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">
-      ↗ Bekijk volledige startlijst op ProcyclingStats
-    </a>
+}
+
+function getRiderTeam(name) {
+  for (const t of [1,2,3]) {
+    if ((state.teams[t]||[]).includes(name)) return t;
+  }
+  return 1;
+}
+
+function buildNewsCard(riderName, articles, team) {
+  const headerClass = `t${team}`;
+  let bodyHtml = '';
+
+  if (articles === null) {
+    bodyHtml = `<div class="news-card-error">⚠ Kon nieuws niet laden</div>`;
+  } else if (articles.length === 0) {
+    bodyHtml = `<div class="news-card-empty">Geen recent nieuws gevonden</div>`;
+  } else {
+    bodyHtml = articles.map(a => `
+      <div class="news-article">
+        <a href="${a.link}" target="_blank" rel="noopener">${a.title || 'Geen titel'}</a>
+        <span class="news-article-meta">${a.date}${a.source ? ' · ' + a.source : ''}</span>
+      </div>`).join('');
+  }
+
+  const teamParts = riderName.split(' ');
+  // Display: show first name first (PCS format is LASTNAME Firstname)
+  const displayName = teamParts.length > 1
+    ? teamParts.slice(1).join(' ') + ' ' + teamParts[0]
+    : riderName;
+
+  return `<div class="news-card" data-team="${team}" data-rider="${riderName}">
+    <div class="news-card-header ${headerClass}">
+      <span class="news-card-rider">${displayName}</span>
+      <span class="news-card-team">TEAM ${team}</span>
+    </div>
+    <div class="news-card-body">${bodyHtml}</div>
   </div>`;
-  document.getElementById('modal-body').innerHTML = html;
 }
 
-function showStartersFallback(raceName, pcsUrl, allRiders) {
-  const riderListHtml = [1,2,3].map(t => {
-    const riders = (state.teams[t]||[]);
-    if (!riders.length) return '';
-    return `<div style="margin-bottom:14px">
-      <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:var(--accent);margin-bottom:6px;font-size:15px">Team ${t}</div>
-      ${riders.map(r => `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
-        <input type="checkbox" id="chk_${r.replace(/[^a-zA-Z]/g,'_')}" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0">
-        <label for="chk_${r.replace(/[^a-zA-Z]/g,'_')}" style="font-size:13px;cursor:pointer">${r}</label>
-      </div>`).join('')}
+window.loadAllNews = async function() {
+  const feed = document.getElementById('news-feed');
+  const status = document.getElementById('news-status');
+  const btn = document.getElementById('news-reload-btn');
+
+  // Gather all riders
+  const allRiders = [];
+  [1,2,3].forEach(t => (state.teams[t]||[]).forEach(n => allRiders.push({name:n, team:t})));
+
+  if (allRiders.length === 0) {
+    feed.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Geen renners gevonden. Voeg eerst renners toe via Beheer.</div>';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Bezig...';
+  status.style.display = 'block';
+  feed.innerHTML = '';
+
+  // Build skeleton cards first
+  allRiders.forEach(({name, team}) => {
+    const teamParts = name.split(' ');
+    const displayName = teamParts.length > 1 ? teamParts.slice(1).join(' ') + ' ' + teamParts[0] : name;
+    feed.innerHTML += `<div class="news-card" data-team="${team}" data-rider="${name}" id="card_${name.replace(/[^a-zA-Z]/g,'_')}">
+      <div class="news-card-header t${team}">
+        <span class="news-card-rider">${displayName}</span>
+        <span class="news-card-team">TEAM ${team}</span>
+      </div>
+      <div class="news-card-body">
+        <div class="news-card-loading"><div class="spinner"></div> Laden...</div>
+      </div>
     </div>`;
-  }).join('');
+  });
 
-  document.getElementById('modal-body').innerHTML = `
-    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">
-      Automatisch ophalen is niet gelukt (ProcyclingStats blokkeert soms verzoeken). 
-      Open de startlijst en vink hieronder handmatig aan wie er start:
-    </p>
-    <a href="${pcsUrl}" target="_blank"
-       style="display:inline-block;margin-bottom:20px;background:var(--accent);color:#000;padding:9px 18px;
-              font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:2px;font-size:13px;
-              border-radius:3px;text-decoration:none;">
-      ↗ Open startlijst op ProcyclingStats
-    </a>
-    <div style="border-top:1px solid var(--border);padding-top:16px">${riderListHtml}</div>`;
-}
+  // Fetch in batches of 4 to avoid rate limiting
+  const BATCH = 4;
+  let done = 0;
+  for (let i = 0; i < allRiders.length; i += BATCH) {
+    const batch = allRiders.slice(i, i + BATCH);
+    await Promise.all(batch.map(async ({name, team}) => {
+      const articles = await fetchRiderRSS(name);
+      done++;
+      status.textContent = `Laden... ${done}/${allRiders.length} renners (${name})`;
+      // Update this rider's card
+      const card = document.getElementById('card_' + name.replace(/[^a-zA-Z]/g,'_'));
+      if (card) {
+        card.outerHTML = buildNewsCard(name, articles, team);
+      }
+    }));
+    // Small delay between batches
+    if (i + BATCH < allRiders.length) await new Promise(r => setTimeout(r, 300));
+  }
+
+  status.style.display = 'none';
+  btn.disabled = false;
+  btn.textContent = '🔄 Vernieuwen';
+  newsLoaded = true;
+  filterNews();
+};
+
+window.filterNews = function() {
+  const filter = document.getElementById('news-team-filter')?.value || 'all';
+  document.querySelectorAll('#news-feed .news-card').forEach(card => {
+    const team = card.dataset.team;
+    card.classList.toggle('news-hidden', filter !== 'all' && team !== filter);
+  });
+};
+
 // ═══════════════════════════════════
 // START
 // ═══════════════════════════════════
