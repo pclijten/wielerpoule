@@ -1008,58 +1008,180 @@ function getTeamRiders(t) {
   return r;
 }
 
-window.checkRaceStarters = function(raceId, raceName) {
+// Normalize string: lowercase, remove accents, keep only a-z and spaces
+function normStr(s) {
+  return (s||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z\s]/g,' ').replace(/\s+/g,' ').trim();
+}
+
+// Extract the last name from a poule name like "VAN DER POEL Mathieu" or "MILAN Jonathan"
+// Poule format: ALL-CAPS surname(s) + Title-case firstname(s)
+// Strategy: take all leading uppercase words as surname
+function getSurname(pouleName) {
+  const parts = pouleName.trim().split(/\s+/);
+  const surnameParts = [];
+  for (const p of parts) {
+    // A word is part of the surname if it's all uppercase (or short connector like "de","van")
+    if (p === p.toUpperCase()) surnameParts.push(p);
+    else break;
+  }
+  return normStr(surnameParts.join(' '));
+}
+
+// Match a PCS rider slug against a poule name
+// PCS slugs look like: "mathieu-van-der-poel", "soren-waerenskjold", "vincenzo-albanese"
+// We check that ALL parts of the surname appear in the slug
+function matchesSlug(slug, pouleName) {
+  const slugNorm = slug.replace(/-/g,' ');
+  const surname = getSurname(pouleName);
+  if (!surname || surname.length < 3) return false;
+  // Every word in the surname must appear in the slug
+  const surnameWords = surname.split(' ').filter(w => w.length >= 2);
+  return surnameWords.every(w => slugNorm.includes(w));
+}
+
+window.checkRaceStarters = async function(raceId, raceName) {
   const slug = PCS_SLUGS[raceName];
   const year = new Date().getFullYear();
   const pcsUrl = `https://www.procyclingstats.com/race/${slug || raceName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}/${year}/startlist`;
 
+  openModal(`🚴 Starters: ${raceName}`,
+    `<div class="loading"><div class="spinner"></div> Startlijst ophalen van ProcyclingStats...</div>`);
+
+  // Fetch PCS startlist HTML via CORS proxy
+  let pcsRiderSlugs = [];
+  let fetchOk = false;
+
+  const proxies = [
+    `https://corsproxy.io/?${encodeURIComponent(pcsUrl)}`,
+    `https://api.allorigins.win/get?url=${encodeURIComponent(pcsUrl)}`
+  ];
+
+  for (const proxyUrl of proxies) {
+    try {
+      const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+      if (!resp.ok) continue;
+      let html = '';
+      if (proxyUrl.includes('allorigins')) {
+        const j = await resp.json();
+        html = j.contents || '';
+      } else {
+        html = await resp.text();
+      }
+      if (html.length < 3000) continue;
+
+      // Extract rider slugs: href="rider/mathieu-van-der-poel" or href="../rider/..."
+      const matches = [...html.matchAll(/href=["'][^"']*\/rider\/([a-z0-9][a-z0-9\-]+)["']/g)];
+      pcsRiderSlugs = [...new Set(matches.map(m => m[1]))];
+
+      if (pcsRiderSlugs.length > 20) { fetchOk = true; break; }
+    } catch(e) { /* try next proxy */ }
+  }
+
   const teamColors = { 1: '#1a6e3c', 2: '#1a3d6e', 3: '#6e1a1a' };
 
-  let checklistHtml = '';
-  [1,2,3].forEach(t => {
-    const riders = getTeamRiders(t);
-    const bg = teamColors[t];
-    checklistHtml += `<div style="margin-bottom:16px">
-      <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:16px;
-                  color:#fff;background:${bg};padding:6px 12px;border-radius:3px;
-                  margin-bottom:6px;display:inline-block;">Team ${t}</div>`;
-    riders.forEach(r => {
-      const id = 'chk_' + r.replace(/[^a-zA-Z0-9]/g,'_');
-      checklistHtml += `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
-        <input type="checkbox" id="${id}"
-               style="accent-color:${bg};width:16px;height:16px;flex-shrink:0;cursor:pointer;"
-               onchange="updateStarterCount()">
-        <label for="${id}" style="font-size:13px;cursor:pointer;font-weight:500">${r}</label>
-      </div>`;
+  if (fetchOk) {
+    // Match poule riders against PCS slugs
+    const starters = [];
+    const notStarters = [];
+
+    [1,2,3].forEach(t => {
+      getTeamRiders(t).forEach(riderName => {
+        const found = pcsRiderSlugs.some(s => matchesSlug(s, riderName));
+        if (found) starters.push({ name: riderName, team: t });
+        else notStarters.push({ name: riderName, team: t });
+      });
     });
-    checklistHtml += `</div>`;
-  });
 
-  const modalBody = `
-    <div style="margin-bottom:20px;padding:14px 16px;background:var(--surface2);border-radius:4px;border-left:3px solid var(--accent);">
-      <p style="font-size:13px;line-height:1.6;margin-bottom:10px">
-        Open de startlijst op ProcyclingStats, kijk welke van jouw renners er staan
-        en vink ze hieronder aan. De teller houdt bij hoeveel je hebt aangevinkt.
-      </p>
-      <a href="${pcsUrl}" target="_blank" rel="noopener"
-         style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;
-                padding:9px 18px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
-                letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none;">
-        ↗ Open startlijst op ProcyclingStats
-      </a>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
-                   text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>
-      <span id="starter-count" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent)">0 starters</span>
-    </div>
-    ${checklistHtml}`;
+    let html = `
+      <div style="margin-bottom:16px;padding:12px 14px;background:var(--surface2);border-radius:4px;
+                  display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:var(--muted)">Gevonden op startlijst ProcyclingStats</span>
+        <a href="${pcsUrl}" target="_blank"
+           style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">
+          ↗ Bekijk volledige lijst
+        </a>
+      </div>`;
 
-  openModal(`🚴 Starters: ${raceName}`, modalBody);
+    if (starters.length === 0) {
+      html += `<div class="empty-state">Geen van jouw renners gevonden op de startlijst.</div>`;
+    } else {
+      html += `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+        <strong style="color:var(--accent);font-size:18px">${starters.length}</strong> renner(s) van jouw poule starten:
+      </p><div class="starters-list">`;
+      starters.forEach(s => {
+        html += `<span class="starter-chip team${s.team}" style="font-size:13px;padding:7px 14px;">
+          ${s.name}
+          <span style="opacity:0.5;font-size:10px;margin-left:4px">T${s.team}</span>
+        </span>`;
+      });
+      html += `</div>`;
+    }
+
+    if (notStarters.length > 0) {
+      html += `<details style="margin-top:16px;">
+        <summary style="font-size:12px;color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">
+          Overige ${notStarters.length} renners (niet gevonden op startlijst)
+        </summary>
+        <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.8">
+          ${notStarters.map(s => s.name).join(' &middot; ')}
+        </p>
+      </details>`;
+    }
+
+    document.getElementById('modal-body').innerHTML = html;
+
+  } else {
+    // Proxy failed — show manual checklist
+    const teamColors2 = { 1: '#1a6e3c', 2: '#1a3d6e', 3: '#6e1a1a' };
+    let checklistHtml = '';
+    [1,2,3].forEach(t => {
+      const riders = getTeamRiders(t);
+      const bg = teamColors2[t];
+      checklistHtml += `<div style="margin-bottom:16px">
+        <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:16px;
+                    color:#fff;background:${bg};padding:6px 12px;border-radius:3px;
+                    margin-bottom:6px;display:inline-block;">Team ${t}</div>`;
+      riders.forEach(r => {
+        const id = 'chk_' + r.replace(/[^a-zA-Z0-9]/g,'_');
+        checklistHtml += `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
+          <input type="checkbox" id="${id}"
+                 style="accent-color:${bg};width:16px;height:16px;flex-shrink:0;cursor:pointer;"
+                 onchange="updateStarterCount()">
+          <label for="${id}" style="font-size:13px;cursor:pointer;font-weight:500">${r}</label>
+        </div>`;
+      });
+      checklistHtml += `</div>`;
+    });
+
+    document.getElementById('modal-body').innerHTML = `
+      <div style="margin-bottom:16px;padding:12px 14px;background:rgba(196,52,26,0.1);border:1px solid var(--accent2);border-radius:4px;">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:10px">
+          Automatisch ophalen mislukt. Open de startlijst en vink handmatig aan:
+        </p>
+        <a href="${pcsUrl}" target="_blank" rel="noopener"
+           style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;
+                  padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
+                  letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none;">
+          ↗ Open startlijst op ProcyclingStats
+        </a>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
+                     text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>
+        <span id="starter-count" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent)">0 starters</span>
+      </div>
+      ${checklistHtml}`;
+  }
 };
 
 window.updateStarterCount = function() {
   const checked = document.querySelectorAll('#modal input[type=checkbox]:checked').length;
+  const el = document.getElementById('starter-count');
+  if (el) el.textContent = checked + (checked === 1 ? ' starter' : ' starters');
+};
+
   const el = document.getElementById('starter-count');
   if (el) el.textContent = checked + (checked === 1 ? ' starter' : ' starters');
 };
