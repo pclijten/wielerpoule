@@ -31,20 +31,59 @@
     overflow-x: hidden;
   }
 
-  /* Diagonal bg texture */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
-    background: repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 40px,
-      rgba(255,255,255,0.012) 40px,
-      rgba(255,255,255,0.012) 41px
-    );
+    background: repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(255,255,255,0.012) 40px, rgba(255,255,255,0.012) 41px);
     pointer-events: none;
     z-index: 0;
+  }
+
+  /* LOADER */
+  #app-loader {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    gap: 20px;
+    transition: opacity 0.4s;
+  }
+  #app-loader.hidden { opacity: 0; pointer-events: none; }
+  #app-loader .loader-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--accent);
+    letter-spacing: 4px;
+  }
+  #app-loader .loader-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .loader-bar {
+    width: 200px;
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .loader-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    animation: loadbar 1.5s ease-in-out infinite;
+  }
+  @keyframes loadbar {
+    0% { width: 0%; margin-left: 0; }
+    50% { width: 60%; margin-left: 20%; }
+    100% { width: 0%; margin-left: 100%; }
   }
 
   header {
@@ -66,595 +105,214 @@
     color: var(--accent);
     text-shadow: 4px 4px 0 rgba(232,180,34,0.15);
   }
+  .logo span { color: var(--text); font-size: 26px; display: block; letter-spacing: 8px; margin-bottom: 6px; }
 
-  .logo span {
-    color: var(--text);
-    font-size: 26px;
-    display: block;
-    letter-spacing: 8px;
-    margin-bottom: 6px;
-  }
-
-  nav {
+  /* Firebase status dot */
+  .db-status {
     display: flex;
-    gap: 2px;
-    margin-left: auto;
-  }
-
-  nav button {
-    background: none;
-    border: none;
-    color: var(--muted);
+    align-items: center;
+    gap: 6px;
     font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 12px 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-    border-bottom: 2px solid transparent;
-    position: relative;
-    bottom: -1px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    margin-bottom: 8px;
   }
+  .db-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: background 0.3s;
+  }
+  .db-dot.connected { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+  .db-dot.error { background: var(--accent2); }
 
+  nav { display: flex; gap: 2px; margin-left: auto; }
+  nav button {
+    background: none; border: none; color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase; padding: 12px 20px; cursor: pointer;
+    transition: all 0.2s; border-bottom: 2px solid transparent; position: relative; bottom: -1px;
+  }
   nav button:hover { color: var(--text); }
-  nav button.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
+  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  main {
-    position: relative;
-    z-index: 1;
-    padding: 32px;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
+  main { position: relative; z-index: 1; padding: 32px; max-width: 1400px; margin: 0 auto; }
 
   .tab-content { display: none; }
-  .tab-content.active { display: block; }
+  .tab-content.active { display: block; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-  /* ─── TEAMS ─── */
-  .teams-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 32px;
-  }
-
-  .team-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .team-header {
-    padding: 14px 18px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 2px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
+  /* TEAMS */
+  .teams-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .team-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .team-header { padding: 14px 18px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; display: flex; justify-content: space-between; align-items: center; }
   .team-header.t1 { background: var(--team1); }
   .team-header.t2 { background: var(--team2); }
   .team-header.t3 { background: var(--team3); }
-
-  .team-total {
-    font-size: 14px;
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 1px;
-    opacity: 0.85;
-  }
-
-  .rider-row {
-    display: flex;
-    align-items: center;
-    padding: 10px 18px;
-    border-bottom: 1px solid var(--border);
-    gap: 10px;
-    transition: background 0.15s;
-  }
-
+  .team-total { font-size: 14px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; opacity: 0.85; }
+  .rider-row { display: flex; align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--border); gap: 10px; transition: background 0.15s; }
   .rider-row:hover { background: var(--surface2); }
   .rider-row:last-child { border-bottom: none; }
+  .rider-name { flex: 1; font-size: 13px; font-weight: 500; letter-spacing: 0.5px; }
+  .rider-pts { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 600; color: var(--accent); min-width: 50px; text-align: right; }
+  .news-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 3px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; transition: all 0.2s; }
+  .news-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  .rider-name {
-    flex: 1;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-  }
+  /* SECTION TITLE */
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  .rider-pts {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--accent);
-    min-width: 50px;
-    text-align: right;
-  }
-
-  .news-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 3px 8px;
-    border-radius: 3px;
-    font-size: 11px;
-    cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 1px;
-    transition: all 0.2s;
-  }
-
-  .news-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  /* ─── WEDSTRIJDEN ─── */
-  .section-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 28px;
-    letter-spacing: 3px;
-    color: var(--accent);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .races-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--surface);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .races-table th {
-    background: var(--surface2);
-    padding: 11px 16px;
-    text-align: left;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-weight: 600;
-  }
-
-  .races-table td {
-    padding: 11px 16px;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-    vertical-align: middle;
-  }
-
+  /* RACES TABLE */
+  .races-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 4px; overflow: hidden; }
+  .races-table th { background: var(--surface2); padding: 11px 16px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .races-table td { padding: 11px 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
   .races-table tr:last-child td { border-bottom: none; }
-  .races-table tr:hover td { background: var(--surface2); }
 
-  .race-type {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 2px;
-    background: var(--surface2);
-    color: var(--muted);
-  }
+  .clickable-row { cursor: pointer; }
+  .clickable-row:hover td { background: var(--surface2); }
+  .clickable-row:hover .starters-hint { color: var(--accent); }
+  .starters-hint { color: var(--muted); font-size: 12px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; transition: color 0.2s; }
 
+  .race-type { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 2px; background: var(--surface2); color: var(--muted); }
   .race-type.monument { background: rgba(232,180,34,0.15); color: var(--accent); }
   .race-type.grande { background: rgba(196,52,26,0.15); color: #e87060; }
   .race-type.rit { background: rgba(26,110,60,0.15); color: #60c88f; }
   .race-type.divers { background: rgba(100,80,200,0.15); color: #a090e0; }
 
-  .check-riders-btn {
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 5px 12px;
-    border-radius: 3px;
-    font-size: 12px;
-    cursor: pointer;
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 1px;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-
-  .check-riders-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .check-riders-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* ─── PUNTEN ─── */
-  .score-form {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 24px;
-    border-radius: 4px;
-    margin-bottom: 24px;
-  }
-
-  .score-form h3 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 22px;
-    letter-spacing: 2px;
-    margin-bottom: 18px;
-    color: var(--accent);
-  }
-
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr auto auto;
-    gap: 12px;
-    align-items: end;
-  }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .form-group label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .form-group select,
-  .form-group input {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 9px 12px;
-    border-radius: 3px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  .form-group select:focus,
-  .form-group input:focus { border-color: var(--accent); }
-
-  .form-group select option { background: var(--surface2); }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    padding: 10px 20px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: opacity 0.2s;
-    white-space: nowrap;
-  }
-
-  .btn-primary:hover { opacity: 0.88; }
-
-  .btn-danger {
-    background: var(--accent2);
-    color: #fff;
-    border: none;
-    padding: 6px 12px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    cursor: pointer;
-    border-radius: 3px;
-    transition: opacity 0.2s;
-  }
-
-  .btn-danger:hover { opacity: 0.8; }
-
-  .results-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--surface);
-    border-radius: 4px;
-    overflow: hidden;
-    font-size: 13px;
-  }
-
-  .results-table th {
-    background: var(--surface2);
-    padding: 10px 14px;
-    text-align: left;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .results-table td {
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .results-table tr:last-child td { border-bottom: none; }
-
-  .pts-badge {
-    background: rgba(232,180,34,0.18);
-    color: var(--accent);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    padding: 2px 10px;
-    border-radius: 3px;
-  }
-
-  /* ─── SCOREBOARD ─── */
-  .scoreboard {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 32px;
-  }
-
-  .score-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-
-  .score-card-header {
-    padding: 16px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
+  /* SCORES */
+  .scoreboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+  .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+  .score-card-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
   .score-card-header.t1 { background: var(--team1); }
   .score-card-header.t2 { background: var(--team2); }
   .score-card-header.t3 { background: var(--team3); }
-
-  .score-card-name {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 20px;
-    letter-spacing: 2px;
-  }
-
-  .score-card-total {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 36px;
-    color: var(--accent);
-  }
-
-  .score-breakdown {
-    padding: 12px 20px;
-  }
-
-  .score-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    padding: 4px 0;
-    border-bottom: 1px solid var(--border);
-    color: var(--muted);
-  }
-
+  .score-card-name { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; }
+  .score-card-total { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--accent); }
+  .score-breakdown { padding: 12px 20px; }
+  .score-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
   .score-row:last-child { border-bottom: none; }
   .score-row strong { color: var(--text); }
 
-  /* ─── MODAL ─── */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    animation: fadeIn 0.2s;
-  }
+  /* FORM */
+  .score-form { background: var(--surface); border: 1px solid var(--border); padding: 24px; border-radius: 4px; margin-bottom: 24px; }
+  .score-form h3 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; margin-bottom: 18px; color: var(--accent); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+  .form-group select, .form-group input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 3px; font-family: 'Barlow', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
+  .form-group select:focus, .form-group input:focus { border-color: var(--accent); }
+  .form-group select option { background: var(--surface2); }
 
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .btn-primary { background: var(--accent); color: #000; border: none; padding: 10px 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-radius: 3px; transition: opacity 0.2s; white-space: nowrap; }
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-danger { background: var(--accent2); color: #fff; border: none; padding: 6px 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1px; cursor: pointer; border-radius: 3px; transition: opacity 0.2s; }
+  .btn-danger:hover { opacity: 0.8; }
 
-  .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    max-width: 680px;
-    width: 100%;
-    max-height: 80vh;
-    overflow-y: auto;
-    animation: slideUp 0.25s ease;
-  }
+  /* RESULTS TABLE */
+  .results-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 4px; overflow: hidden; font-size: 13px; }
+  .results-table th { background: var(--surface2); padding: 10px 14px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+  .results-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  .results-table tr:last-child td { border-bottom: none; }
+  .pts-badge { background: rgba(232,180,34,0.18); color: var(--accent); font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; padding: 2px 10px; border-radius: 3px; }
 
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn 0.2s; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; max-width: 680px; width: 100%; max-height: 80vh; overflow-y: auto; animation: slideUp 0.25s ease; }
   @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-  .modal-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    background: var(--surface);
-  }
-
-  .modal-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 24px;
-    letter-spacing: 2px;
-    color: var(--accent);
-  }
-
-  .modal-close {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-size: 22px;
-    cursor: pointer;
-    line-height: 1;
-    transition: color 0.2s;
-  }
-
+  .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--accent); }
+  .modal-close { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; transition: color 0.2s; }
   .modal-close:hover { color: var(--text); }
   .modal-body { padding: 24px; }
 
-  .news-item {
-    padding: 14px 0;
-    border-bottom: 1px solid var(--border);
-  }
-
+  .news-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
   .news-item:last-child { border-bottom: none; }
+  .news-item-title { font-weight: 500; margin-bottom: 6px; font-size: 14px; }
+  .news-item-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
-  .news-item-title {
-    font-weight: 500;
-    margin-bottom: 6px;
-    font-size: 14px;
-  }
-
-  .news-item-text {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
-  .loading {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--muted);
-    font-size: 14px;
-    padding: 20px 0;
-  }
-
-  .spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-
+  .loading { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; padding: 20px 0; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  .starters-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 16px 0;
-  }
-
-  .starter-chip {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 3px;
-    padding: 5px 12px;
-    font-size: 12px;
-    font-family: 'Barlow Condensed', sans-serif;
-    letter-spacing: 0.5px;
-  }
-
+  .starters-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 0; }
+  .starter-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 5px 12px; font-size: 12px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
   .starter-chip.team1 { border-left: 3px solid #1a6e3c; }
   .starter-chip.team2 { border-left: 3px solid #1a3d6e; }
   .starter-chip.team3 { border-left: 3px solid #6e1a1a; }
 
-  .empty-state {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--muted);
-    font-size: 14px;
-  }
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
 
-  /* Manage races */
-  .add-race-form {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-  }
-
-  .add-race-form input, .add-race-form select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 9px 12px;
-    border-radius: 3px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 13px;
-    outline: none;
-  }
-
+  /* MANAGE */
+  .manage-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 32px; }
+  .add-race-form { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+  .add-race-form input, .add-race-form select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 3px; font-family: 'Barlow', sans-serif; font-size: 13px; outline: none; }
   .add-race-form input { flex: 1; min-width: 160px; }
+  .manage-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 3px; font-size: 13px; outline: none; font-family: 'Barlow', sans-serif; }
+
+  /* SYNC TOAST */
+  #sync-toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface); border: 1px solid #4ade80; color: #4ade80;
+    padding: 10px 18px; border-radius: 4px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 1px;
+    z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none;
+    display: flex; align-items: center; gap: 8px;
+  }
+  #sync-toast.show { opacity: 1; }
 
   @media (max-width: 900px) {
-    .teams-grid, .scoreboard { grid-template-columns: 1fr; }
+    .teams-grid, .scoreboard, .manage-grid { grid-template-columns: 1fr; }
     .form-row { grid-template-columns: 1fr 1fr; }
     header { flex-wrap: wrap; }
     nav { width: 100%; overflow-x: auto; }
+    .logo { font-size: 38px; }
   }
 </style>
 </head>
 <body>
+
+<!-- LOADER -->
+<div id="app-loader">
+  <div class="loader-title">DS 2026</div>
+  <div class="loader-sub">Verbinding maken met database...</div>
+  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+</div>
 
 <header>
   <div class="logo">
     <span>Directeur Sportief</span>
     2026
   </div>
+  <div class="db-status">
+    <div class="db-dot" id="db-dot"></div>
+    <span id="db-status-text">Verbinden...</span>
+  </div>
   <nav>
-    <button class="active" onclick="showTab('teams')">Mijn Teams</button>
-    <button onclick="showTab('races')">Wedstrijden</button>
-    <button onclick="showTab('scores')">Puntenstand</button>
-    <button onclick="showTab('manage')">Beheer</button>
+    <button class="active" onclick="showTab('teams', this)">Mijn Teams</button>
+    <button onclick="showTab('races', this)">Wedstrijden</button>
+    <button onclick="showTab('scores', this)">Puntenstand</button>
+    <button onclick="showTab('manage', this)">Beheer</button>
   </nav>
 </header>
 
 <main>
-
-  <!-- TEAMS TAB -->
+  <!-- TEAMS -->
   <div class="tab-content active" id="tab-teams">
     <div class="section-title">Mijn Poule Teams</div>
     <div class="teams-grid" id="teams-grid"></div>
   </div>
 
-  <!-- RACES TAB -->
+  <!-- RACES -->
   <div class="tab-content" id="tab-races">
     <div class="section-title">Wedstrijdkalender 2026</div>
     <table class="races-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Wedstrijd</th>
-          <th>Type</th>
-          <th>Renners check</th>
-        </tr>
-      </thead>
+      <thead><tr><th>#</th><th>Wedstrijd</th><th>Type</th><th>Datum</th><th>Starters</th></tr></thead>
       <tbody id="races-tbody"></tbody>
     </table>
   </div>
 
-  <!-- SCORES TAB -->
+  <!-- SCORES -->
   <div class="tab-content" id="tab-scores">
     <div class="section-title">Scorebord</div>
     <div class="scoreboard" id="scoreboard"></div>
@@ -665,15 +323,11 @@
       <div class="form-row">
         <div class="form-group">
           <label>Renner</label>
-          <select id="score-rider">
-            <option value="">Kies renner...</option>
-          </select>
+          <select id="score-rider"><option value="">Kies renner...</option></select>
         </div>
         <div class="form-group">
           <label>Wedstrijd</label>
-          <select id="score-race">
-            <option value="">Kies wedstrijd...</option>
-          </select>
+          <select id="score-race"><option value="">Kies wedstrijd...</option></select>
         </div>
         <div class="form-group">
           <label>Positie</label>
@@ -697,53 +351,37 @@
 
     <div class="section-title">Ingevoerde uitslagen</div>
     <table class="results-table">
-      <thead>
-        <tr>
-          <th>Renner</th>
-          <th>Team</th>
-          <th>Wedstrijd</th>
-          <th>Positie</th>
-          <th>Punten</th>
-          <th></th>
-        </tr>
-      </thead>
+      <thead><tr><th>Renner</th><th>Team</th><th>Wedstrijd</th><th>Positie</th><th>Punten</th><th></th></tr></thead>
       <tbody id="results-tbody"></tbody>
     </table>
   </div>
 
-  <!-- MANAGE TAB -->
+  <!-- MANAGE -->
   <div class="tab-content" id="tab-manage">
     <div class="section-title">Renners beheren</div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:32px;">
-      <div id="manage-team1" class="score-card">
+    <div class="manage-grid">
+      <div class="score-card">
         <div class="score-card-header t1"><span class="score-card-name">Team 1</span></div>
         <div class="score-breakdown" id="manage-t1-list"></div>
-        <div style="padding:0 16px 12px;">
-          <div style="display:flex;gap:8px;margin-top:8px;">
-            <input id="new-rider-t1" placeholder="Naam renner..." style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:3px;font-size:13px;outline:none;">
-            <button class="btn-primary" onclick="addRider(1)" style="padding:7px 12px;font-size:12px;">+</button>
-          </div>
+        <div style="padding:0 16px 14px;display:flex;gap:8px;">
+          <input class="manage-input" id="new-rider-t1" placeholder="Naam renner toevoegen...">
+          <button class="btn-primary" onclick="addRider(1)" style="padding:8px 14px;">+</button>
         </div>
       </div>
-      <div id="manage-team2" class="score-card">
+      <div class="score-card">
         <div class="score-card-header t2"><span class="score-card-name">Team 2</span></div>
         <div class="score-breakdown" id="manage-t2-list"></div>
-        <div style="padding:0 16px 12px;">
-          <div style="display:flex;gap:8px;margin-top:8px;">
-            <input id="new-rider-t2" placeholder="Naam renner..." style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:3px;font-size:13px;outline:none;">
-            <button class="btn-primary" onclick="addRider(2)" style="padding:7px 12px;font-size:12px;">+</button>
-          </div>
+        <div style="padding:0 16px 14px;display:flex;gap:8px;">
+          <input class="manage-input" id="new-rider-t2" placeholder="Naam renner toevoegen...">
+          <button class="btn-primary" onclick="addRider(2)" style="padding:8px 14px;">+</button>
         </div>
       </div>
-      <div id="manage-team3" class="score-card">
+      <div class="score-card">
         <div class="score-card-header t3"><span class="score-card-name">Team 3</span></div>
         <div class="score-breakdown" id="manage-t3-list"></div>
-        <div style="padding:0 16px 12px;">
-          <div style="display:flex;gap:8px;margin-top:8px;">
-            <input id="new-rider-t3" placeholder="Naam renner..." style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:3px;font-size:13px;outline:none;">
-            <button class="btn-primary" onclick="addRider(3)" style="padding:7px 12px;font-size:12px;">+</button>
-          </div>
+        <div style="padding:0 16px 14px;display:flex;gap:8px;">
+          <input class="manage-input" id="new-rider-t3" placeholder="Naam renner toevoegen...">
+          <button class="btn-primary" onclick="addRider(3)" style="padding:8px 14px;">+</button>
         </div>
       </div>
     </div>
@@ -758,17 +396,16 @@
         <option value="Grote Ronde">Grote Ronde</option>
         <option value="Divers">Divers</option>
       </select>
-      <input id="new-race-date" type="text" placeholder="Datum (bijv. 28 feb 2026)">
-      <button class="btn-primary" onclick="addRace()">Wedstrijd toevoegen</button>
+      <input id="new-race-date" placeholder="Datum (bijv. 28 feb 2026)">
+      <button class="btn-primary" onclick="addRace()">+ Toevoegen</button>
     </div>
     <div id="manage-races-list"></div>
   </div>
-
 </main>
 
 <!-- MODAL -->
-<div id="modal" class="modal-overlay" style="display:none;" onclick="closeModal(event)">
-  <div class="modal" id="modal-content">
+<div id="modal" class="modal-overlay" style="display:none;" onclick="closeModalOverlay(event)">
+  <div class="modal">
     <div class="modal-header">
       <span class="modal-title" id="modal-title">—</span>
       <button class="modal-close" onclick="closeModal()">✕</button>
@@ -777,19 +414,34 @@
   </div>
 </div>
 
-<script>
-// ═══════════════════════════════════════════
-// DATA
-// ═══════════════════════════════════════════
+<!-- SYNC TOAST -->
+<div id="sync-toast">🔄 Data bijgewerkt</div>
 
-const POINT_TABLES = {
-  Eendaagse:   [200,161,136,116,101,87,76,65,56,47],
-  Monument:    [300,241,203,173,149,129,111,96,81,68],
-  Rittenkoers: { eindkl:[250,207,179,157,140,125,112,100,90,80], etappe:70 },
-  'Grote Ronde':{ eindkl:[450,372,321,283,251,224,201,180,161,143], etappe:70 },
-  Divers:      [250,189,149,119,94,73,55,38,24,10]
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, push, remove, update }
+  from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+// ═══════════════════════════════════
+// FIREBASE INIT
+// ═══════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyArBhELl7gsMceNOkLloVSsdcjMjnm3_X0",
+  authDomain: "wielerpoule-2026.firebaseapp.com",
+  databaseURL: "https://wielerpoule-2026-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "wielerpoule-2026",
+  storageBucket: "wielerpoule-2026.firebasestorage.app",
+  messagingSenderId: "976087528286",
+  appId: "1:976087528286:web:2ffeec66b1488d27e395cf"
 };
 
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ═══════════════════════════════════
+// DEFAULT DATA
+// ═══════════════════════════════════
 const DEFAULT_TEAMS = {
   1: ["DEL TORO ROMERO Isaac","CHRISTEN Jan","TULETT Ben","MILAN Matteo","MILAN Jonathan","DECOMBLE Maxime","De JONG Timo","REMIJN Senna","KUBIS Lukas","VAN EETVELT Lennert"],
   2: ["VAN DER POEL Mathieu","JOHANNESSEN Tobias","PEDERSEN Mads","WAERENSKJOLD Soren","GODON Dorian","ALBANESE Vincenzo","BISSEGGER Stefan","KOCKELMANN Mathieu","RENARD Alexis","VERMEERSCH Gianni"],
@@ -827,81 +479,139 @@ const DEFAULT_RACES = [
   {id:28,name:"WK (tijdrit)",type:"Divers",date:"20 sep 2026"},
 ];
 
-// ═══════════════════════════════════════════
-// STATE - stored via window.storage
-// ═══════════════════════════════════════════
-let state = {
-  teams: DEFAULT_TEAMS,
-  races: DEFAULT_RACES,
-  scores: [], // [{riderId, riderName, raceId, raceName, raceType, position, points, team}]
-  nextRaceId: 100
+const POINT_TABLES = {
+  Eendaagse:     [200,161,136,116,101,87,76,65,56,47],
+  Monument:      [300,241,203,173,149,129,111,96,81,68],
+  Rittenkoers:   { eindkl:[250,207,179,157,140,125,112,100,90,80], etappe:70 },
+  'Grote Ronde': { eindkl:[450,372,321,283,251,224,201,180,161,143], etappe:70 },
+  Divers:        [250,189,149,119,94,73,55,38,24,10]
 };
 
-async function saveState() {
-  try {
-    await window.storage.set('ds2026-state', JSON.stringify(state));
-  } catch(e) { console.warn('Storage save error', e); }
-}
+// ═══════════════════════════════════
+// STATE (synced from Firebase)
+// ═══════════════════════════════════
+let state = { teams: DEFAULT_TEAMS, races: DEFAULT_RACES, scores: {}, nextRaceId: 100 };
+let firstLoad = true;
 
-async function loadState() {
+// ═══════════════════════════════════
+// FIREBASE LISTENERS (realtime)
+// ═══════════════════════════════════
+async function initFirebase() {
   try {
-    const res = await window.storage.get('ds2026-state');
-    if (res) {
-      const saved = JSON.parse(res.value);
-      // merge to keep defaults if keys missing
-      state.teams = saved.teams || DEFAULT_TEAMS;
-      state.races = saved.races || DEFAULT_RACES;
-      state.scores = saved.scores || [];
-      state.nextRaceId = saved.nextRaceId || 100;
+    // Check if data exists, seed defaults if not
+    const snap = await get(ref(db, 'wielerpoule'));
+    if (!snap.exists()) {
+      await set(ref(db, 'wielerpoule'), {
+        teams: DEFAULT_TEAMS,
+        races: DEFAULT_RACES,
+        scores: {},
+        nextRaceId: 100
+      });
     }
-  } catch(e) { /* first run */ }
-}
 
-// ═══════════════════════════════════════════
-// TABS
-// ═══════════════════════════════════════════
-function showTab(name) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
-  render();
-}
+    // Realtime listener
+    onValue(ref(db, 'wielerpoule'), (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const wasFirst = firstLoad;
+        firstLoad = false;
+        state.teams = data.teams || DEFAULT_TEAMS;
+        state.races = data.races || DEFAULT_RACES;
+        state.scores = data.scores || {};
+        state.nextRaceId = data.nextRaceId || 100;
+        render();
+        if (!wasFirst) showToast();
+      }
+      setConnected(true);
+      hideLoader();
+    }, (error) => {
+      setConnected(false);
+      hideLoader();
+      console.error('Firebase error:', error);
+    });
 
-// ═══════════════════════════════════════════
-// RENDER
-// ═══════════════════════════════════════════
-function calcTeamScore(teamNum) {
-  return state.scores
-    .filter(s => s.team === teamNum)
-    .reduce((a, b) => a + b.points, 0);
-}
-
-function getRiderTeam(riderName) {
-  for (const [t, riders] of Object.entries(state.teams)) {
-    if (riders.some(r => r.toLowerCase() === riderName.toLowerCase())) return parseInt(t);
+  } catch (e) {
+    setConnected(false);
+    hideLoader();
+    console.error('Firebase init error:', e);
   }
-  return null;
 }
 
+function hideLoader() {
+  const loader = document.getElementById('app-loader');
+  loader.classList.add('hidden');
+  setTimeout(() => loader.style.display = 'none', 500);
+}
+
+function setConnected(ok) {
+  const dot = document.getElementById('db-dot');
+  const txt = document.getElementById('db-status-text');
+  dot.className = 'db-dot ' + (ok ? 'connected' : 'error');
+  txt.textContent = ok ? 'Live verbonden' : 'Verbinding verbroken';
+}
+
+function showToast() {
+  const t = document.getElementById('sync-toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════
+// SAVE HELPERS
+// ═══════════════════════════════════
+async function saveTeams() {
+  await set(ref(db, 'wielerpoule/teams'), state.teams);
+}
+async function saveRaces() {
+  await set(ref(db, 'wielerpoule/races'), state.races);
+  await set(ref(db, 'wielerpoule/nextRaceId'), state.nextRaceId);
+}
+async function saveScores() {
+  await set(ref(db, 'wielerpoule/scores'), state.scores);
+}
+
+// ═══════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════
 function calcPoints(type, position) {
   if (position === 'etappe') {
-    const tbl = POINT_TABLES[type];
-    return tbl && tbl.etappe ? tbl.etappe : 0;
+    const t = POINT_TABLES[type];
+    return (t && t.etappe) ? t.etappe : 0;
   }
   const idx = parseInt(position) - 1;
-  const tbl = POINT_TABLES[type];
-  if (!tbl) return 0;
-  if (Array.isArray(tbl)) return tbl[idx] || 0;
-  if (tbl.eindkl) return tbl.eindkl[idx] || 0;
+  const t = POINT_TABLES[type];
+  if (!t) return 0;
+  if (Array.isArray(t)) return t[idx] || 0;
+  if (t.eindkl) return t.eindkl[idx] || 0;
   return 0;
 }
 
 function raceTypeClass(type) {
-  const map = { Monument:'monument', 'Grote Ronde':'grande', Rittenkoers:'rit', Divers:'divers' };
-  return map[type] || '';
+  return { Monument:'monument', 'Grote Ronde':'grande', Rittenkoers:'rit', Divers:'divers' }[type] || '';
 }
 
+function scoresArray() {
+  return Object.entries(state.scores || {}).map(([k,v]) => ({...v, _key: k}));
+}
+
+function teamTotalPts(teamNum) {
+  return scoresArray().filter(s => s.team === teamNum).reduce((a,b) => a + (b.points||0), 0);
+}
+
+// ═══════════════════════════════════
+// TABS
+// ═══════════════════════════════════
+window.showTab = function(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+  render();
+};
+
+// ═══════════════════════════════════
+// RENDER
+// ═══════════════════════════════════
 function render() {
   renderTeams();
   renderRaces();
@@ -912,27 +622,21 @@ function render() {
 
 function renderTeams() {
   const g = document.getElementById('teams-grid');
+  if (!g) return;
   g.innerHTML = '';
   [1,2,3].forEach(t => {
     const riders = state.teams[t] || [];
-    const teamScore = calcTeamScore(t);
-    const scores = state.scores.filter(s => s.team === t);
-
+    const total = teamTotalPts(t);
     let html = `<div class="team-card">
-      <div class="team-header t${t}">
-        <span>Team ${t}</span>
-        <span class="team-total">${teamScore} pts</span>
-      </div>`;
-
+      <div class="team-header t${t}"><span>Team ${t}</span><span class="team-total">${total} pts</span></div>`;
     riders.forEach(r => {
-      const rPts = state.scores.filter(s => s.riderName === r).reduce((a,b)=>a+b.points,0);
+      const rPts = scoresArray().filter(s => s.riderName === r).reduce((a,b)=>a+(b.points||0),0);
       html += `<div class="rider-row">
         <span class="rider-name">${r}</span>
-        <span class="rider-pts">${rPts || ''}</span>
+        <span class="rider-pts">${rPts ? rPts : ''}</span>
         <button class="news-btn" onclick="fetchRiderNews('${r.replace(/'/g,"\\'")}')">Nieuws</button>
       </div>`;
     });
-
     html += '</div>';
     g.innerHTML += html;
   });
@@ -940,62 +644,60 @@ function renderTeams() {
 
 function renderRaces() {
   const tb = document.getElementById('races-tbody');
+  if (!tb) return;
   tb.innerHTML = '';
-  state.races.forEach((r, i) => {
-    tb.innerHTML += `<tr>
-      <td style="color:var(--muted);font-size:12px;">${i+1}</td>
+  (state.races || []).forEach((r, i) => {
+    const safe = r.name.replace(/'/g, "\\'");
+    tb.innerHTML += `<tr class="clickable-row" onclick="checkRaceStarters(${r.id}, '${safe}')">
+      <td style="color:var(--muted);font-size:12px">${i+1}</td>
       <td style="font-weight:500">${r.name}</td>
       <td><span class="race-type ${raceTypeClass(r.type)}">${r.type}</span></td>
-      <td>
-        <button class="check-riders-btn" onclick="checkRaceStarters(${r.id}, '${r.name.replace(/'/g,"\\'")}')">
-          Bekijk deelnemers
-        </button>
-      </td>
+      <td style="color:var(--muted);font-size:12px">${r.date||''}</td>
+      <td><span class="starters-hint">🔍 Bekijk starters</span></td>
     </tr>`;
   });
 }
 
 function renderScores() {
-  // scoreboard
   const sb = document.getElementById('scoreboard');
+  if (!sb) return;
   sb.innerHTML = '';
-  [1,2,3].forEach(t => {
-    const scores = state.scores.filter(s => s.team === t);
-    const total = scores.reduce((a,b)=>a+b.points,0);
-    const byRace = {};
-    scores.forEach(s => { byRace[s.raceName] = (byRace[s.raceName]||0)+s.points; });
 
-    let breakdownHtml = Object.entries(byRace).map(([race,pts]) =>
+  [1,2,3].forEach(t => {
+    const scores = scoresArray().filter(s => s.team === t);
+    const total = scores.reduce((a,b)=>a+(b.points||0),0);
+    const byRace = {};
+    scores.forEach(s => { byRace[s.raceName] = (byRace[s.raceName]||0)+(s.points||0); });
+    let breakdown = Object.entries(byRace).map(([race,pts]) =>
       `<div class="score-row"><span>${race}</span><strong>${pts}</strong></div>`
     ).join('');
-
-    if (!breakdownHtml) breakdownHtml = '<div class="score-row" style="justify-content:center;color:var(--muted)">Nog geen punten</div>';
+    if (!breakdown) breakdown = `<div class="score-row" style="justify-content:center">Nog geen punten</div>`;
 
     sb.innerHTML += `<div class="score-card">
       <div class="score-card-header t${t}">
         <span class="score-card-name">Team ${t}</span>
         <span class="score-card-total">${total}</span>
       </div>
-      <div class="score-breakdown">${breakdownHtml}</div>
+      <div class="score-breakdown">${breakdown}</div>
     </div>`;
   });
 
-  // results table
   const tb = document.getElementById('results-tbody');
+  if (!tb) return;
+  const all = scoresArray().reverse();
   tb.innerHTML = '';
-  if (state.scores.length === 0) {
+  if (all.length === 0) {
     tb.innerHTML = `<tr><td colspan="6" class="empty-state">Nog geen uitslagen ingevoerd</td></tr>`;
   } else {
-    [...state.scores].reverse().forEach((s, i) => {
-      const idx = state.scores.length - 1 - i;
+    all.forEach(s => {
       const posLabel = s.position === 'etappe' ? 'Etappezege' : `No. ${s.position}`;
       tb.innerHTML += `<tr>
         <td style="font-weight:500">${s.riderName}</td>
-        <td><span style="color:var(--muted);font-size:12px">Team ${s.team}</span></td>
+        <td style="color:var(--muted);font-size:12px">Team ${s.team}</td>
         <td>${s.raceName}</td>
         <td style="color:var(--muted);font-size:12px">${posLabel}</td>
         <td><span class="pts-badge">+${s.points}</span></td>
-        <td><button class="btn-danger" onclick="removeScore(${idx})">✕</button></td>
+        <td><button class="btn-danger" onclick="removeScore('${s._key}')">✕</button></td>
       </tr>`;
     });
   }
@@ -1004,19 +706,21 @@ function renderScores() {
 function renderManage() {
   [1,2,3].forEach(t => {
     const list = document.getElementById(`manage-t${t}-list`);
+    if (!list) return;
     const riders = state.teams[t] || [];
     list.innerHTML = riders.map((r,i) =>
       `<div class="score-row">
-        <strong>${r}</strong>
+        <strong style="font-size:12px">${r}</strong>
         <button class="btn-danger" onclick="removeRider(${t},${i})" style="padding:3px 8px;font-size:11px">✕</button>
       </div>`
-    ).join('');
+    ).join('') || '<div style="padding:8px 0;color:var(--muted);font-size:12px">Geen renners</div>';
   });
 
   const ml = document.getElementById('manage-races-list');
+  if (!ml) return;
   ml.innerHTML = `<table class="races-table">
     <thead><tr><th>Wedstrijd</th><th>Type</th><th>Datum</th><th></th></tr></thead>
-    <tbody>${state.races.map(r =>
+    <tbody>${(state.races||[]).map(r =>
       `<tr>
         <td style="font-weight:500">${r.name}</td>
         <td><span class="race-type ${raceTypeClass(r.type)}">${r.type}</span></td>
@@ -1030,8 +734,8 @@ function renderManage() {
 function populateSelects() {
   const riderSel = document.getElementById('score-rider');
   const raceSel = document.getElementById('score-race');
-  const prevRider = riderSel.value;
-  const prevRace = raceSel.value;
+  if (!riderSel || !raceSel) return;
+  const pr = riderSel.value, prace = raceSel.value;
 
   riderSel.innerHTML = '<option value="">Kies renner...</option>';
   [1,2,3].forEach(t => {
@@ -1041,100 +745,93 @@ function populateSelects() {
   });
 
   raceSel.innerHTML = '<option value="">Kies wedstrijd...</option>';
-  state.races.forEach(r => {
-    raceSel.innerHTML += `<option value="${r.id}">${r.name} (${r.type})</option>`;
+  (state.races||[]).forEach(r => {
+    raceSel.innerHTML += `<option value="${r.id}">${r.name}</option>`;
   });
 
-  if (prevRider) riderSel.value = prevRider;
-  if (prevRace) raceSel.value = prevRace;
+  if (pr) riderSel.value = pr;
+  if (prace) raceSel.value = prace;
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // ACTIONS
-// ═══════════════════════════════════════════
-function addScore() {
-  const riderVal = document.getElementById('score-rider').value;
+// ═══════════════════════════════════
+window.addScore = async function() {
+  const rv = document.getElementById('score-rider').value;
   const raceId = parseInt(document.getElementById('score-race').value);
   const pos = document.getElementById('score-pos').value;
+  if (!rv || !raceId) return alert('Kies een renner en wedstrijd');
 
-  if (!riderVal || !raceId) return alert('Kies een renner en wedstrijd');
-
-  const [riderName, teamStr] = riderVal.split('|');
+  const [riderName, teamStr] = rv.split('|');
   const teamNum = parseInt(teamStr);
-  const race = state.races.find(r => r.id === raceId);
+  const race = (state.races||[]).find(r => r.id === raceId);
   if (!race) return;
 
   const pts = calcPoints(race.type, pos);
-  state.scores.push({
-    riderName, team: teamNum, raceId: race.id, raceName: race.name,
-    raceType: race.type, position: pos, points: pts
-  });
+  const newScore = { riderName, team: teamNum, raceId: race.id, raceName: race.name, raceType: race.type, position: pos, points: pts, ts: Date.now() };
 
-  saveState();
-  render();
-}
+  const scoresRef = ref(db, 'wielerpoule/scores');
+  await push(scoresRef, newScore);
+};
 
-function removeScore(idx) {
-  state.scores.splice(idx, 1);
-  saveState();
-  render();
-}
+window.removeScore = async function(key) {
+  await remove(ref(db, `wielerpoule/scores/${key}`));
+};
 
-function addRider(teamNum) {
+window.addRider = async function(teamNum) {
   const input = document.getElementById(`new-rider-t${teamNum}`);
   const name = input.value.trim().toUpperCase();
   if (!name) return;
-  if (!state.teams[teamNum]) state.teams[teamNum] = [];
-  state.teams[teamNum].push(name);
+  const riders = [...(state.teams[teamNum]||[]), name];
+  await set(ref(db, `wielerpoule/teams/${teamNum}`), riders);
   input.value = '';
-  saveState();
-  render();
-}
+};
 
-function removeRider(teamNum, idx) {
-  state.teams[teamNum].splice(idx, 1);
-  saveState();
-  render();
-}
+window.removeRider = async function(teamNum, idx) {
+  const riders = [...(state.teams[teamNum]||[])];
+  riders.splice(idx, 1);
+  await set(ref(db, `wielerpoule/teams/${teamNum}`), riders);
+};
 
-function addRace() {
+window.addRace = async function() {
   const name = document.getElementById('new-race-name').value.trim();
   const type = document.getElementById('new-race-type').value;
   const date = document.getElementById('new-race-date').value.trim();
   if (!name) return;
-  state.races.push({ id: state.nextRaceId++, name, type, date });
+  const races = [...(state.races||[]), { id: state.nextRaceId, name, type, date }];
+  await set(ref(db, 'wielerpoule/races'), races);
+  await set(ref(db, 'wielerpoule/nextRaceId'), state.nextRaceId + 1);
   document.getElementById('new-race-name').value = '';
   document.getElementById('new-race-date').value = '';
-  saveState();
-  render();
-}
+};
 
-function removeRace(id) {
-  state.races = state.races.filter(r => r.id !== id);
-  saveState();
-  render();
-}
+window.removeRace = async function(id) {
+  const races = (state.races||[]).filter(r => r.id !== id);
+  await set(ref(db, 'wielerpoule/races'), races);
+};
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════
 // MODAL
-// ═══════════════════════════════════════════
-function openModal(title, bodyHtml) {
+// ═══════════════════════════════════
+window.openModal = function(title, bodyHtml) {
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').innerHTML = bodyHtml;
   document.getElementById('modal').style.display = 'flex';
-}
+};
 
-function closeModal(e) {
-  if (e && e.target !== document.getElementById('modal')) return;
+window.closeModal = function() {
   document.getElementById('modal').style.display = 'none';
-}
+};
 
-// ═══════════════════════════════════════════
-// CLAUDE API CALLS
-// ═══════════════════════════════════════════
-async function fetchRiderNews(riderName) {
+window.closeModalOverlay = function(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+};
+
+// ═══════════════════════════════════
+// AI: NIEUWS
+// ═══════════════════════════════════
+window.fetchRiderNews = async function(riderName) {
   openModal(`Nieuws: ${riderName}`, `<div class="loading"><div class="spinner"></div> Nieuws ophalen...</div>`);
-
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1143,42 +840,28 @@ async function fetchRiderNews(riderName) {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: 'Je bent een wielerexpert. Geef kort en bondig de laatste nieuwtjes over de gevraagde wielrenner. Antwoord ALTIJD in het Nederlands. Geef 3-4 nieuwtjes in JSON-array: [{"title":"...","text":"..."}]. Geef ALLEEN de JSON terug, geen andere tekst.',
-        messages: [{ role:'user', content:`Zoek het laatste nieuws over wielrenner ${riderName} in 2026. Starters, blessures, form, resultaten.` }]
+        system: 'Je bent een wielerexpert. Zoek het laatste nieuws over de gevraagde renner. Geef 3-4 nieuwtjes terug als JSON-array: [{"title":"...","text":"..."}]. Antwoord ALLEEN met de JSON, geen andere tekst. Schrijf in het Nederlands.',
+        messages: [{ role:'user', content:`Zoek het laatste nieuws (2026) over wielrenner ${riderName}. Focus op: startslijsten, blessures, vorm, recente resultaten.` }]
       })
     });
-
     const data = await resp.json();
     const text = data.content.filter(c=>c.type==='text').map(c=>c.text).join('');
-
     let items;
-    try {
-      const clean = text.replace(/```json|```/g,'').trim();
-      items = JSON.parse(clean);
-    } catch(e) {
-      // fallback plain text
-      document.getElementById('modal-body').innerHTML = `<div class="news-item"><div class="news-item-text">${text}</div></div>`;
-      return;
-    }
-
-    const html = items.map(item =>
-      `<div class="news-item">
-        <div class="news-item-title">${item.title}</div>
-        <div class="news-item-text">${item.text}</div>
-      </div>`
-    ).join('');
-
-    document.getElementById('modal-body').innerHTML = html || '<div class="empty-state">Geen recent nieuws gevonden</div>';
-
+    try { items = JSON.parse(text.replace(/```json|```/g,'').trim()); }
+    catch(e) { document.getElementById('modal-body').innerHTML = `<div class="news-item"><div class="news-item-text">${text}</div></div>`; return; }
+    document.getElementById('modal-body').innerHTML = items.map(item =>
+      `<div class="news-item"><div class="news-item-title">${item.title}</div><div class="news-item-text">${item.text}</div></div>`
+    ).join('') || `<div class="empty-state">Geen nieuws gevonden</div>`;
   } catch(err) {
-    document.getElementById('modal-body').innerHTML = `<div class="empty-state">Fout bij ophalen nieuws. Probeer opnieuw.</div>`;
+    document.getElementById('modal-body').innerHTML = `<div class="empty-state">Fout bij ophalen nieuws.</div>`;
   }
-}
+};
 
-async function checkRaceStarters(raceId, raceName) {
-  const allRiders = [...(state.teams[1]||[]), ...(state.teams[2]||[]), ...(state.teams[3]||[])];
-  openModal(`Starters: ${raceName}`, `<div class="loading"><div class="spinner"></div> Startlijst controleren via procyclingstats...</div>`);
-
+// ═══════════════════════════════════
+// AI: STARTERS CHECK
+// ═══════════════════════════════════
+window.checkRaceStarters = async function(raceId, raceName) {
+  openModal(`🚴 Starters: ${raceName}`, `<div class="loading"><div class="spinner"></div> Startlijst controleren via procyclingstats...</div>`);
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1187,56 +870,43 @@ async function checkRaceStarters(raceId, raceName) {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1500,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: `Je bent een wielerexpert. De gebruiker heeft 30 renners in zijn poule verdeeld over 3 teams. Zoek via procyclingstats.com of andere bronnen welke van DEZE renners starten in de gevraagde wedstrijd. Antwoord in het Nederlands in JSON: {"starters":[{"name":"...", "team":1}],"notFound":["naam1","naam2"]}. Geef ALLEEN de JSON terug.`,
-        messages: [{ role:'user', content:`Wedstrijd: ${raceName}. Mijn poule renners zijn:\n\nTeam 1: ${(state.teams[1]||[]).join(', ')}\nTeam 2: ${(state.teams[2]||[]).join(', ')}\nTeam 3: ${(state.teams[3]||[]).join(', ')}\n\nWelke van deze renners staan op de startlijst van ${raceName}?` }]
+        system: `Je bent een wielerexpert. Zoek via procyclingstats.com en andere betrouwbare bronnen de startlijst van de gevraagde wedstrijd. Controleer dan welke renners van de opgegeven poule-lijst op die startlijst staan. Geef je antwoord ALLEEN als JSON in dit formaat: {"starters":[{"name":"VOLLEDIGE NAAM","team":1}],"notFound":["naam1"]}. Geen andere tekst.`,
+        messages: [{ role:'user', content:`Wedstrijd: ${raceName}\n\nMijn poule-renners:\nTeam 1: ${(state.teams[1]||[]).join(', ')}\nTeam 2: ${(state.teams[2]||[]).join(', ')}\nTeam 3: ${(state.teams[3]||[]).join(', ')}\n\nWelke van deze 30 renners staan op de startlijst van ${raceName}?` }]
       })
     });
-
     const data = await resp.json();
     const text = data.content.filter(c=>c.type==='text').map(c=>c.text).join('');
-
     let parsed;
-    try {
-      const clean = text.replace(/```json|```/g,'').trim();
-      parsed = JSON.parse(clean);
-    } catch(e) {
-      document.getElementById('modal-body').innerHTML = `<div class="news-item-text">${text}</div>`;
-      return;
-    }
+    try { parsed = JSON.parse(text.replace(/```json|```/g,'').trim()); }
+    catch(e) { document.getElementById('modal-body').innerHTML = `<div class="news-item-text" style="font-size:13px;line-height:1.6">${text}</div>`; return; }
 
     const starters = parsed.starters || [];
     const notFound = parsed.notFound || [];
-
     let html = '';
+
     if (starters.length === 0) {
-      html += `<div class="empty-state">Geen van jouw renners gevonden op de startlijst</div>`;
+      html = `<div class="empty-state">Geen van jouw renners gevonden op de startlijst</div>`;
     } else {
-      html += `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">${starters.length} renner(s) van jouw poule starten in deze wedstrijd:</p>`;
+      html += `<p style="font-size:13px;color:var(--muted);margin-bottom:14px"><strong style="color:var(--accent)">${starters.length}</strong> renner(s) van jouw poule starten in ${raceName}:</p>`;
       html += '<div class="starters-list">';
       starters.forEach(s => {
-        html += `<span class="starter-chip team${s.team}">${s.name} <span style="opacity:0.6;font-size:10px">T${s.team}</span></span>`;
+        html += `<span class="starter-chip team${s.team}">${s.name} <span style="opacity:0.55;font-size:10px">T${s.team}</span></span>`;
       });
       html += '</div>';
     }
-
     if (notFound.length > 0) {
-      html += `<p style="font-size:12px;color:var(--muted);margin-top:16px">Niet bevestigd op startlijst: ${notFound.join(', ')}</p>`;
+      html += `<p style="font-size:12px;color:var(--muted);margin-top:18px;line-height:1.5">Niet op startlijst gevonden: ${notFound.join(', ')}</p>`;
     }
-
     document.getElementById('modal-body').innerHTML = html;
-
   } catch(err) {
     document.getElementById('modal-body').innerHTML = `<div class="empty-state">Fout bij ophalen startlijst. Probeer opnieuw.</div>`;
   }
-}
+};
 
-// ═══════════════════════════════════════════
-// INIT
-// ═══════════════════════════════════════════
-(async () => {
-  await loadState();
-  render();
-})();
+// ═══════════════════════════════════
+// START
+// ═══════════════════════════════════
+initFirebase();
 </script>
 </body>
 </html>
