@@ -828,40 +828,51 @@ window.closeModalOverlay = function(e) {
 };
 
 // ═══════════════════════════════════
-// AI: NIEUWS
+// NIEUWS — via Google News
 // ═══════════════════════════════════
-window.fetchRiderNews = async function(riderName) {
-  openModal(`Nieuws: ${riderName}`, `<div class="loading"><div class="spinner"></div> Nieuws ophalen...</div>`);
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        system: 'Je bent een wielerexpert. Zoek het laatste nieuws over de gevraagde renner. Geef 3-4 nieuwtjes terug als JSON-array: [{"title":"...","text":"..."}]. Antwoord ALLEEN met de JSON, geen andere tekst. Schrijf in het Nederlands.',
-        messages: [{ role:'user', content:`Zoek het laatste nieuws (2026) over wielrenner ${riderName}. Focus op: startslijsten, blessures, vorm, recente resultaten.` }]
-      })
-    });
-    const data = await resp.json();
-    const text = data.content.filter(c=>c.type==='text').map(c=>c.text).join('');
-    let items;
-    try { items = JSON.parse(text.replace(/```json|```/g,'').trim()); }
-    catch(e) { document.getElementById('modal-body').innerHTML = `<div class="news-item"><div class="news-item-text">${text}</div></div>`; return; }
-    document.getElementById('modal-body').innerHTML = items.map(item =>
-      `<div class="news-item"><div class="news-item-title">${item.title}</div><div class="news-item-text">${item.text}</div></div>`
-    ).join('') || `<div class="empty-state">Geen nieuws gevonden</div>`;
-  } catch(err) {
-    document.getElementById('modal-body').innerHTML = `<div class="empty-state">Fout bij ophalen nieuws.</div>`;
-  }
+window.fetchRiderNews = function(riderName) {
+  // Open Google News search for this rider in a new tab — always works, no API needed
+  const query = encodeURIComponent(riderName + ' wielrenner 2026');
+  const newsUrl = `https://news.google.com/search?q=${query}&hl=nl&gl=NL&ceid=NL:nl`;
+  
+  openModal(`Nieuws: ${riderName}`, `
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+      Klik op de knop om het laatste nieuws over <strong style="color:var(--text)">${riderName}</strong> 
+      te zoeken via Google News. Dit opent in een nieuw tabblad.
+    </p>
+    <a href="${newsUrl}" target="_blank" rel="noopener"
+       style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;
+              padding:12px 20px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
+              letter-spacing:2px;font-size:14px;border-radius:3px;text-decoration:none;margin-bottom:20px;">
+      📰 Open nieuws voor ${riderName}
+    </a>
+    <div style="border-top:1px solid var(--border);padding-top:16px">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;text-transform:uppercase">Snelle links:</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <a href="https://www.procyclingstats.com/rider/${riderName.toLowerCase().replace(/\s+/g,'-')}" target="_blank"
+           style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;
+                  border:1px solid var(--border);padding:5px 10px;border-radius:3px;text-decoration:none;">
+          ↗ ProcyclingStats profiel
+        </a>
+        <a href="https://www.cyclingarchives.com/nl/coureur.php?naam=${encodeURIComponent(riderName)}" target="_blank"
+           style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;
+                  border:1px solid var(--border);padding:5px 10px;border-radius:3px;text-decoration:none;">
+          ↗ CyclingArchives
+        </a>
+        <a href="https://www.wielerflits.nl/?s=${encodeURIComponent(riderName)}" target="_blank"
+           style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;
+                  border:1px solid var(--border);padding:5px 10px;border-radius:3px;text-decoration:none;">
+          ↗ Wielerflits
+        </a>
+      </div>
+    </div>
+  `);
 };
 
 // ═══════════════════════════════════
-// STARTERS CHECK — via ProcyclingStats
+// STARTERS CHECK — via ProcyclingStats CORS proxy
 // ═══════════════════════════════════
 
-// Map race names to their PCS URL slug
 const PCS_SLUGS = {
   'Omloop het Nieuwsblad': 'omloop-het-nieuwsblad',
   'Strade Bianche': 'strade-bianche',
@@ -884,120 +895,102 @@ const PCS_SLUGS = {
   "Giro d'Italia": 'giro-d-italia',
   'Critérium du Dauphiné': 'criterium-du-dauphine',
   'Ronde van Zwitserland': 'tour-de-suisse',
-  'NK Wielrennen': 'netherlands-championships',
+  'NK Wielrennen': 'netherlands-championships-rr',
   'Tour de France': 'tour-de-france',
-  'Clasica San Sebastian': 'clásica-ciclista-san-sebastián',
+  'Clasica San Sebastian': 'clasica-ciclista-san-sebastian',
   'Renewi Tour (Benelux)': 'renewi-tour',
   'La Vuelta Ciclista a España': 'vuelta-a-espana',
-  'GP Québec': 'grand-prix-cycliste-de-quebec',
-  'GP Montréal': 'grand-prix-cycliste-de-montreal',
+  'GP Québec': 'gp-de-quebec',
+  'GP Montréal': 'gp-de-montreal',
   'WK (tijdrit)': 'uci-road-world-championships',
+  'WK (wegwedstrijd)': 'uci-road-world-championships',
 };
 
-function normalizeName(name) {
-  return name.toLowerCase()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // strip accents
-    .replace(/[^a-z\s]/g, '')
-    .trim();
+// Normalize name for matching: strip accents, lowercase, keep only letters+spaces
+function norm(s) {
+  return (s || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z\s]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
 }
 
-function namesMatch(pcsName, pouleName) {
-  const pcs = normalizeName(pcsName);
-  const poule = normalizeName(pouleName);
-  // Split into parts and check overlap
-  const pcsParts = pcs.split(/\s+/);
-  const pouleParts = poule.split(/\s+/);
-  // At least 2 parts must match, or last name matches
-  const matches = pouleParts.filter(p => p.length > 2 && pcsParts.includes(p));
-  if (matches.length >= 2) return true;
-  // Check last name (usually last word in poule name is first name, first word is last name)
-  const pouleLast = pouleParts[0]; // MILAN, VAN DER POEL etc - first word is surname
-  if (pouleLast.length > 3 && pcs.includes(pouleLast)) return true;
-  return false;
+// Strict matching: ALL significant parts of poule name must appear in PCS slug
+function strictMatch(pcsSlug, pouleName) {
+  const pcs = pcsSlug.replace(/-/g, ' ');
+  const poule = norm(pouleName);
+  
+  // Split poule name into parts (words with 3+ chars)
+  const pouleParts = poule.split(/\s+/).filter(p => p.length >= 3);
+  if (pouleParts.length === 0) return false;
+  
+  // ALL parts of the poule name must be found in the PCS slug
+  return pouleParts.every(part => pcs.includes(part));
 }
 
 window.checkRaceStarters = async function(raceId, raceName) {
-  const year = new Date().getFullYear();
   const slug = PCS_SLUGS[raceName];
-  const pcsUrl = slug
+  const year = new Date().getFullYear();
+  const pcsUrl = slug 
     ? `https://www.procyclingstats.com/race/${slug}/${year}/startlist`
-    : null;
+    : `https://www.procyclingstats.com/race/${raceName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}/${year}/startlist`;
 
   openModal(`🚴 Starters: ${raceName}`, `<div class="loading"><div class="spinner"></div> Startlijst ophalen van ProcyclingStats...</div>`);
 
-  // All my riders flat list with team info
   const allRiders = [];
-  [1,2,3].forEach(t => {
-    (state.teams[t]||[]).forEach(name => allRiders.push({ name, team: t }));
-  });
+  [1,2,3].forEach(t => (state.teams[t]||[]).forEach(n => allRiders.push({name: n, team: t})));
 
+  let pcsRiderSlugs = [];
+  let fetchOk = false;
+
+  // Try corsproxy.io first
   try {
-    // Try fetching PCS via CORS proxy
-    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(pcsUrl || `https://www.procyclingstats.com/race/${encodeURIComponent(raceName.toLowerCase().replace(/\s+/g,'-'))}/${year}/startlist`)}`;
-    
-    let html_text = '';
-    let fetchOk = false;
-
-    try {
-      const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(12000) });
-      if (resp.ok) {
-        html_text = await resp.text();
-        fetchOk = html_text.length > 5000;
+    const r = await fetch(`https://corsproxy.io/?${encodeURIComponent(pcsUrl)}`, 
+      { signal: AbortSignal.timeout(10000) });
+    if (r.ok) {
+      const html = await r.text();
+      if (html.length > 3000) {
+        // Extract rider slugs: href="rider/mathieu-van-der-poel"
+        const matches = [...html.matchAll(/href=["']rider\/([a-z0-9\-]+)["']/g)];
+        pcsRiderSlugs = [...new Set(matches.map(m => m[1]))];
+        fetchOk = pcsRiderSlugs.length > 10;
       }
-    } catch(e) { /* proxy failed, try fallback */ }
-
-    // Try alternative proxy if first failed
-    if (!fetchOk) {
-      try {
-        const url2 = `https://api.allorigins.win/get?url=${encodeURIComponent(pcsUrl || '')}`;
-        const resp2 = await fetch(url2, { signal: AbortSignal.timeout(12000) });
-        if (resp2.ok) {
-          const json2 = await resp2.json();
-          html_text = json2.contents || '';
-          fetchOk = html_text.length > 5000;
-        }
-      } catch(e) { /* also failed */ }
     }
+  } catch(e) { /* try next */ }
 
-    if (fetchOk && html_text) {
-      // Parse rider names from PCS HTML
-      // PCS startlist has riders as: href="rider/firstname-lastname"
-      const riderMatches = [...html_text.matchAll(/href=["']rider\/([^"']+)["']/g)];
-      const pcsRiders = riderMatches.map(m => {
-        // Convert slug to name: "mathieu-van-der-poel" -> "mathieu van der poel"
-        return m[1].replace(/-/g, ' ');
-      });
-
-      // Also extract displayed names from the HTML text directly
-      // PCS shows: "VAN DER POEL Mathieu" style
-      const displayedNames = [...html_text.matchAll(/([A-Z][A-Z\s\-']{2,}[A-Z])\s+([A-Z][a-z][a-zA-Z\s\-]*)/g)]
-        .map(m => m[0].trim());
-
-      console.log('PCS riders found:', pcsRiders.length, displayedNames.length);
-
-      const starters = [];
-      const notFound = [];
-
-      allRiders.forEach(rider => {
-        let found = false;
-        // Check against slug-style names
-        for (const pcsR of pcsRiders) {
-          if (namesMatch(pcsR, rider.name)) {
-            starters.push({ name: rider.name, team: rider.team });
-            found = true;
-            break;
-          }
+  // Try allorigins as fallback
+  if (!fetchOk) {
+    try {
+      const r2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(pcsUrl)}`,
+        { signal: AbortSignal.timeout(10000) });
+      if (r2.ok) {
+        const j = await r2.json();
+        const html = j.contents || '';
+        if (html.length > 3000) {
+          const matches = [...html.matchAll(/href=["']rider\/([a-z0-9\-]+)["']/g)];
+          pcsRiderSlugs = [...new Set(matches.map(m => m[1]))];
+          fetchOk = pcsRiderSlugs.length > 10;
         }
-        if (!found) notFound.push(rider.name);
-      });
+      }
+    } catch(e) { /* failed */ }
+  }
 
-      renderStartersResult(raceName, starters, notFound, pcsUrl);
-    } else {
-      // Proxy failed — show PCS page link + manual check option
-      showStartersFallback(raceName, pcsUrl, allRiders);
-    }
+  if (fetchOk && pcsRiderSlugs.length > 0) {
+    console.log(`PCS: found ${pcsRiderSlugs.length} unique rider slugs`);
+    console.log('Sample slugs:', pcsRiderSlugs.slice(0,5));
 
-  } catch(err) {
+    const starters = [];
+    const notFound = [];
+
+    allRiders.forEach(rider => {
+      // Check if ANY pcs slug matches ALL parts of the rider's poule name
+      const found = pcsRiderSlugs.some(slug => strictMatch(slug, rider.name));
+      if (found) starters.push(rider);
+      else notFound.push(rider.name);
+    });
+
+    renderStartersResult(raceName, starters, notFound, pcsUrl);
+  } else {
+    // Both proxies failed — show fallback
     showStartersFallback(raceName, pcsUrl, allRiders);
   }
 };
@@ -1005,62 +998,52 @@ window.checkRaceStarters = async function(raceId, raceName) {
 function renderStartersResult(raceName, starters, notFound, pcsUrl) {
   let html = '';
   if (starters.length === 0) {
-    html = `<div class="empty-state">Geen van jouw renners gevonden op de startlijst</div>`;
+    html = `<div class="empty-state">Geen van jouw renners gevonden op de startlijst.<br>
+      <a href="${pcsUrl}" target="_blank" style="color:var(--accent);font-size:12px">↗ Controleer zelf op ProcyclingStats</a></div>`;
   } else {
     html += `<p style="font-size:13px;color:var(--muted);margin-bottom:14px">
-      <strong style="color:var(--accent)">${starters.length}</strong> renner(s) van jouw poule starten in ${raceName}:
-    </p>`;
-    html += '<div class="starters-list">';
+      <strong style="color:var(--accent)">${starters.length}</strong> van jouw 30 poule-renners starten in ${raceName}:
+    </p><div class="starters-list">`;
     starters.forEach(s => {
       html += `<span class="starter-chip team${s.team}">${s.name} <span style="opacity:0.55;font-size:10px">T${s.team}</span></span>`;
     });
     html += '</div>';
   }
-  if (notFound.length > 0) {
-    html += `<p style="font-size:12px;color:var(--muted);margin-top:16px;line-height:1.6">
-      Niet gevonden op startlijst: ${notFound.join(', ')}
-    </p>`;
-  }
-  if (pcsUrl) {
-    html += `<p style="margin-top:16px"><a href="${pcsUrl}" target="_blank" style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">↗ Bekijk volledige startlijst op ProcyclingStats</a></p>`;
-  }
+  html += `<div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+    <a href="${pcsUrl}" target="_blank"
+       style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">
+      ↗ Bekijk volledige startlijst op ProcyclingStats
+    </a>
+  </div>`;
   document.getElementById('modal-body').innerHTML = html;
 }
 
 function showStartersFallback(raceName, pcsUrl, allRiders) {
-  // Show the PCS page embedded + rider checklist
   const riderListHtml = [1,2,3].map(t => {
     const riders = (state.teams[t]||[]);
     if (!riders.length) return '';
-    return `<div style="margin-bottom:12px">
-      <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:var(--accent);margin-bottom:6px;font-size:16px">Team ${t}</div>
+    return `<div style="margin-bottom:14px">
+      <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;color:var(--accent);margin-bottom:6px;font-size:15px">Team ${t}</div>
       ${riders.map(r => `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">
-        <input type="checkbox" id="chk_${r.replace(/\s/g,'_')}" style="accent-color:var(--accent);width:15px;height:15px;">
-        <label for="chk_${r.replace(/\s/g,'_')}" style="font-size:13px;cursor:pointer">${r}</label>
+        <input type="checkbox" id="chk_${r.replace(/[^a-zA-Z]/g,'_')}" style="accent-color:var(--accent);width:15px;height:15px;flex-shrink:0">
+        <label for="chk_${r.replace(/[^a-zA-Z]/g,'_')}" style="font-size:13px;cursor:pointer">${r}</label>
       </div>`).join('')}
     </div>`;
   }).join('');
 
-  let html = `
+  document.getElementById('modal-body').innerHTML = `
     <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">
-      Automatisch ophalen is niet gelukt. Vink hieronder aan welke renners starten, 
-      of bekijk de startlijst via de link:
+      Automatisch ophalen is niet gelukt (ProcyclingStats blokkeert soms verzoeken). 
+      Open de startlijst en vink hieronder handmatig aan wie er start:
     </p>
-    <a href="${pcsUrl||'https://www.procyclingstats.com'}" target="_blank" 
-       style="display:inline-block;margin-bottom:20px;background:var(--accent);color:#000;padding:8px 16px;
+    <a href="${pcsUrl}" target="_blank"
+       style="display:inline-block;margin-bottom:20px;background:var(--accent);color:#000;padding:9px 18px;
               font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:2px;font-size:13px;
               border-radius:3px;text-decoration:none;">
       ↗ Open startlijst op ProcyclingStats
     </a>
-    <div style="border-top:1px solid var(--border);padding-top:16px">
-      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;color:var(--muted);margin-bottom:12px;text-transform:uppercase">
-        Vink aan wie er start:
-      </div>
-      ${riderListHtml}
-    </div>`;
-  document.getElementById('modal-body').innerHTML = html;
+    <div style="border-top:1px solid var(--border);padding-top:16px">${riderListHtml}</div>`;
 }
-
 // ═══════════════════════════════════
 // START
 // ═══════════════════════════════════
