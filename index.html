@@ -6,496 +6,269 @@
 <title>Directeur Sportief 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0c10;
-    --surface: #12151c;
-    --surface2: #1a1e28;
-    --border: #252a38;
-    --accent: #e8b422;
-    --accent2: #c4341a;
-    --text: #e8eaf0;
-    --muted: #6b7280;
-    --team1: #1a6e3c;
-    --team2: #1a3d6e;
-    --team3: #6e1a1a;
-  }
+:root {
+  --bg:#0a0c10; --surface:#12151c; --surface2:#1a1e28; --border:#252a38;
+  --accent:#e8b422; --accent2:#c4341a; --text:#e8eaf0; --muted:#6b7280;
+  --t1:#1a6e3c; --t2:#1a3d6e; --t3:#6e1a1a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(-45deg,transparent,transparent 40px,rgba(255,255,255,.012) 40px,rgba(255,255,255,.012) 41px);pointer-events:none;z-index:0}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+#loader{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:20px;transition:opacity .4s}
+#loader.hidden{opacity:0;pointer-events:none}
+#loader .lt{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--accent);letter-spacing:4px}
+#loader .ls{font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:3px;color:var(--muted);text-transform:uppercase}
+.lbar{width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden}
+.lbar-fill{height:100%;background:var(--accent);animation:lb 1.5s ease-in-out infinite}
+@keyframes lb{0%{width:0%;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0%;margin-left:100%}}
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Barlow', sans-serif;
-    font-weight: 300;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+header{position:relative;z-index:10;padding:24px 32px 0;display:flex;align-items:flex-end;gap:24px;border-bottom:1px solid var(--border)}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:3px;line-height:1;color:var(--accent)}
+.logo span{color:var(--text);font-size:26px;display:block;letter-spacing:8px;margin-bottom:6px}
+.dbst{display:flex;align-items:center;gap:6px;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1px;color:var(--muted);margin-bottom:8px}
+.dbd{width:7px;height:7px;border-radius:50%;background:var(--muted);transition:background .3s}
+.dbd.on{background:#4ade80;box-shadow:0 0 6px #4ade80}
+.dbd.err{background:var(--accent2)}
+nav{display:flex;gap:2px;margin-left:auto}
+nav button{background:none;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;padding:12px 20px;cursor:pointer;transition:all .2s;border-bottom:2px solid transparent;position:relative;bottom:-1px}
+nav button:hover{color:var(--text)}
+nav button.active{color:var(--accent);border-bottom-color:var(--accent)}
 
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(255,255,255,0.012) 40px, rgba(255,255,255,0.012) 41px);
-    pointer-events: none;
-    z-index: 0;
-  }
+main{position:relative;z-index:1;padding:32px;max-width:1400px;margin:0 auto}
+.tab{display:none}
+.tab.active{display:block;animation:fi .2s}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  /* LOADER */
-  #app-loader {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    gap: 20px;
-    transition: opacity 0.4s;
-  }
-  #app-loader.hidden { opacity: 0; pointer-events: none; }
-  #app-loader .loader-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 48px;
-    color: var(--accent);
-    letter-spacing: 4px;
-  }
-  #app-loader .loader-sub {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 13px;
-    letter-spacing: 3px;
-    color: var(--muted);
-    text-transform: uppercase;
-  }
-  .loader-bar {
-    width: 200px;
-    height: 2px;
-    background: var(--border);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .loader-bar-fill {
-    height: 100%;
-    background: var(--accent);
-    width: 0%;
-    animation: loadbar 1.5s ease-in-out infinite;
-  }
-  @keyframes loadbar {
-    0% { width: 0%; margin-left: 0; }
-    50% { width: 60%; margin-left: 20%; }
-    100% { width: 0%; margin-left: 100%; }
-  }
+.sec{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.sec::after{content:'';flex:1;height:1px;background:var(--border)}
 
-  header {
-    position: relative;
-    z-index: 10;
-    padding: 24px 32px 0;
-    display: flex;
-    align-items: flex-end;
-    gap: 24px;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 0;
-  }
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.tcard{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.thead{padding:14px 18px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;display:flex;justify-content:space-between;align-items:center}
+.thead.t1{background:var(--t1)}.thead.t2{background:var(--t2)}.thead.t3{background:var(--t3)}
+.tpts{font-size:14px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;opacity:.85}
+.rrow{display:flex;align-items:center;padding:10px 18px;border-bottom:1px solid var(--border);gap:10px;transition:background .15s}
+.rrow:hover{background:var(--surface2)}
+.rrow:last-child{border-bottom:none}
+.rname{flex:1;font-size:13px;font-weight:500;letter-spacing:.5px}
+.rpts{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:600;color:var(--accent);min-width:50px;text-align:right}
+.nbtn{background:none;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:3px;font-size:11px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;transition:all .2s}
+.nbtn:hover{border-color:var(--accent);color:var(--accent)}
 
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 52px;
-    letter-spacing: 3px;
-    line-height: 1;
-    color: var(--accent);
-    text-shadow: 4px 4px 0 rgba(232,180,34,0.15);
-  }
-  .logo span { color: var(--text); font-size: 26px; display: block; letter-spacing: 8px; margin-bottom: 6px; }
+.rtbl{width:100%;border-collapse:collapse;background:var(--surface);border-radius:4px;overflow:hidden}
+.rtbl th{background:var(--surface2);padding:11px 16px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600}
+.rtbl td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.rtbl tr:last-child td{border-bottom:none}
+.crow{cursor:pointer}
+.crow:hover td{background:var(--surface2)}
+.crow:hover .sh{color:var(--accent)}
+.sh{color:var(--muted);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;transition:color .2s}
+.rt{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:2px;background:var(--surface2);color:var(--muted)}
+.rt.monument{background:rgba(232,180,34,.15);color:var(--accent)}
+.rt.grande{background:rgba(196,52,26,.15);color:#e87060}
+.rt.rit{background:rgba(26,110,60,.15);color:#60c88f}
+.rt.divers{background:rgba(100,80,200,.15);color:#a090e0}
 
-  /* Firebase status dot */
-  .db-status {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    letter-spacing: 1px;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-  .db-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: var(--muted);
-    transition: background 0.3s;
-  }
-  .db-dot.connected { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
-  .db-dot.error { background: var(--accent2); }
+.sbrd{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:32px}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.sch{padding:16px 20px;display:flex;justify-content:space-between;align-items:center}
+.sch.t1{background:var(--t1)}.sch.t2{background:var(--t2)}.sch.t3{background:var(--t3)}
+.scn{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px}
+.sct{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--accent)}
+.scb{padding:12px 20px}
+.sr{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border);color:var(--muted)}
+.sr:last-child{border-bottom:none}
+.sr strong{color:var(--text)}
 
-  nav { display: flex; gap: 2px; margin-left: auto; }
-  nav button {
-    background: none; border: none; color: var(--muted);
-    font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 600;
-    letter-spacing: 2px; text-transform: uppercase; padding: 12px 20px; cursor: pointer;
-    transition: all 0.2s; border-bottom: 2px solid transparent; position: relative; bottom: -1px;
-  }
-  nav button:hover { color: var(--text); }
-  nav button.active { color: var(--accent); border-bottom-color: var(--accent); }
+.sform{background:var(--surface);border:1px solid var(--border);padding:24px;border-radius:4px;margin-bottom:24px}
+.sform h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:18px;color:var(--accent)}
+.frow{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.fg select,.fg input,.mi{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:3px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
+.fg select:focus,.fg input:focus{border-color:var(--accent)}
+.fg select option{background:var(--surface2)}
+.bp{background:var(--accent);color:#000;border:none;padding:10px 20px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:3px;transition:opacity .2s;white-space:nowrap}
+.bp:hover{opacity:.88}
+.bd{background:var(--accent2);color:#fff;border:none;padding:6px 12px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;border-radius:3px;transition:opacity .2s}
+.bd:hover{opacity:.8}
+.restbl{width:100%;border-collapse:collapse;background:var(--surface);border-radius:4px;overflow:hidden;font-size:13px}
+.restbl th{background:var(--surface2);padding:10px 14px;text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.restbl td{padding:10px 14px;border-bottom:1px solid var(--border)}
+.restbl tr:last-child td{border-bottom:none}
+.pts{background:rgba(232,180,34,.18);color:var(--accent);font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;padding:2px 10px;border-radius:3px}
 
-  main { position: relative; z-index: 1; padding: 32px; max-width: 1400px; margin: 0 auto; }
+.mgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:32px}
+.arf{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.arf input,.arf select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:3px;font-family:'Barlow',sans-serif;font-size:13px;outline:none}
+.arf input{flex:1;min-width:160px}
 
-  .tab-content { display: none; }
-  .tab-content.active { display: block; animation: fadeIn 0.2s; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.ncard{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:border-color .2s,transform .15s}
+.ncard:hover{border-color:var(--accent);transform:translateY(-2px)}
+.nhead{padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.nhead.t1{background:rgba(26,110,60,.25);border-left:3px solid var(--t1)}
+.nhead.t2{background:rgba(26,61,110,.25);border-left:3px solid var(--t2)}
+.nhead.t3{background:rgba(110,26,26,.25);border-left:3px solid var(--t3)}
+.nrider{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;flex:1}
+.nteam{font-size:10px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;color:var(--muted)}
+.nart{padding:10px 14px;border-bottom:1px solid var(--border)}
+.nart:last-child{border-bottom:none}
+.nart a{color:var(--text);text-decoration:none;font-size:13px;font-weight:500;line-height:1.4;display:block;margin-bottom:3px;transition:color .15s}
+.nart a:hover{color:var(--accent)}
+.nmet{font-size:11px;color:var(--muted);font-family:'Barlow Condensed',sans-serif}
+.nload{padding:16px 14px;color:var(--muted);font-size:12px;display:flex;align-items:center;gap:8px}
+.nempty{padding:14px;color:var(--muted);font-size:12px;font-style:italic}
+.nhide{display:none!important}
 
-  /* TEAMS */
-  .teams-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .team-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-  .team-header { padding: 14px 18px; font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; display: flex; justify-content: space-between; align-items: center; }
-  .team-header.t1 { background: var(--team1); }
-  .team-header.t2 { background: var(--team2); }
-  .team-header.t3 { background: var(--team3); }
-  .team-total { font-size: 14px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; opacity: 0.85; }
-  .rider-row { display: flex; align-items: center; padding: 10px 18px; border-bottom: 1px solid var(--border); gap: 10px; transition: background 0.15s; }
-  .rider-row:hover { background: var(--surface2); }
-  .rider-row:last-child { border-bottom: none; }
-  .rider-name { flex: 1; font-size: 13px; font-weight: 500; letter-spacing: 0.5px; }
-  .rider-pts { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 600; color: var(--accent); min-width: 50px; text-align: right; }
-  .news-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 3px 8px; border-radius: 3px; font-size: 11px; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; transition: all 0.2s; }
-  .news-btn:hover { border-color: var(--accent); color: var(--accent); }
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;animation:fi .2s}
+.mo{background:var(--surface);border:1px solid var(--border);border-radius:4px;max-width:680px;width:100%;max-height:80vh;overflow-y:auto;animation:su .25s ease}
+@keyframes su{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.moh{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:1}
+.mot{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--accent)}
+.moc{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;transition:color .2s}
+.moc:hover{color:var(--text)}
+.mob{padding:24px}
+.loading{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px;padding:20px 0}
+.spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.slist{display:flex;flex-wrap:wrap;gap:8px;padding:14px 0}
+.chip{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:6px 14px;font-size:13px;font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px}
+.chip.t1{border-left:3px solid var(--t1)}.chip.t2{border-left:3px solid var(--t2)}.chip.t3{border-left:3px solid var(--t3)}
+.empty{text-align:center;padding:40px 24px;color:var(--muted);font-size:14px}
 
-  /* SECTION TITLE */
-  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 3px; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
-  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+#toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid #4ade80;color:#4ade80;padding:10px 18px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.show{opacity:1}
 
-  /* RACES TABLE */
-  .races-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 4px; overflow: hidden; }
-  .races-table th { background: var(--surface2); padding: 11px 16px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-  .races-table td { padding: 11px 16px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
-  .races-table tr:last-child td { border-bottom: none; }
-
-  .clickable-row { cursor: pointer; }
-  .clickable-row:hover td { background: var(--surface2); }
-  .clickable-row:hover .starters-hint { color: var(--accent); }
-  .starters-hint { color: var(--muted); font-size: 12px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; transition: color 0.2s; }
-
-  .race-type { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 2px; background: var(--surface2); color: var(--muted); }
-  .race-type.monument { background: rgba(232,180,34,0.15); color: var(--accent); }
-  .race-type.grande { background: rgba(196,52,26,0.15); color: #e87060; }
-  .race-type.rit { background: rgba(26,110,60,0.15); color: #60c88f; }
-  .race-type.divers { background: rgba(100,80,200,0.15); color: #a090e0; }
-
-  /* SCORES */
-  .scoreboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
-  .score-card { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
-  .score-card-header { padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-  .score-card-header.t1 { background: var(--team1); }
-  .score-card-header.t2 { background: var(--team2); }
-  .score-card-header.t3 { background: var(--team3); }
-  .score-card-name { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; }
-  .score-card-total { font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: var(--accent); }
-  .score-breakdown { padding: 12px 20px; }
-  .score-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; border-bottom: 1px solid var(--border); color: var(--muted); }
-  .score-row:last-child { border-bottom: none; }
-  .score-row strong { color: var(--text); }
-
-  /* FORM */
-  .score-form { background: var(--surface); border: 1px solid var(--border); padding: 24px; border-radius: 4px; margin-bottom: 24px; }
-  .score-form h3 { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 2px; margin-bottom: 18px; color: var(--accent); }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group label { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
-  .form-group select, .form-group input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 3px; font-family: 'Barlow', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; }
-  .form-group select:focus, .form-group input:focus { border-color: var(--accent); }
-  .form-group select option { background: var(--surface2); }
-
-  .btn-primary { background: var(--accent); color: #000; border: none; padding: 10px 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-radius: 3px; transition: opacity 0.2s; white-space: nowrap; }
-  .btn-primary:hover { opacity: 0.88; }
-  .btn-danger { background: var(--accent2); color: #fff; border: none; padding: 6px 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 1px; cursor: pointer; border-radius: 3px; transition: opacity 0.2s; }
-  .btn-danger:hover { opacity: 0.8; }
-
-  /* RESULTS TABLE */
-  .results-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 4px; overflow: hidden; font-size: 13px; }
-  .results-table th { background: var(--surface2); padding: 10px 14px; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
-  .results-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
-  .results-table tr:last-child td { border-bottom: none; }
-  .pts-badge { background: rgba(232,180,34,0.18); color: var(--accent); font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; padding: 2px 10px; border-radius: 3px; }
-
-  /* MODAL */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 24px; animation: fadeIn 0.2s; }
-  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; max-width: 680px; width: 100%; max-height: 80vh; overflow-y: auto; animation: slideUp 0.25s ease; }
-  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--surface); z-index: 1; }
-  .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 2px; color: var(--accent); }
-  .modal-close { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; transition: color 0.2s; }
-  .modal-close:hover { color: var(--text); }
-  .modal-body { padding: 24px; }
-
-  .news-item { padding: 14px 0; border-bottom: 1px solid var(--border); }
-  .news-item:last-child { border-bottom: none; }
-  .news-item-title { font-weight: 500; margin-bottom: 6px; font-size: 14px; }
-  .news-item-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
-
-  .loading { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; padding: 20px 0; }
-  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .starters-list { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px 0; }
-  .starter-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 5px 12px; font-size: 12px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
-  .starter-chip.team1 { border-left: 3px solid #1a6e3c; }
-  .starter-chip.team2 { border-left: 3px solid #1a3d6e; }
-  .starter-chip.team3 { border-left: 3px solid #6e1a1a; }
-
-  .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px; }
-
-  /* MANAGE */
-  .manage-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 32px; }
-  .add-race-form { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-  .add-race-form input, .add-race-form select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 3px; font-family: 'Barlow', sans-serif; font-size: 13px; outline: none; }
-  .add-race-form input { flex: 1; min-width: 160px; }
-  .manage-input { flex: 1; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 7px 10px; border-radius: 3px; font-size: 13px; outline: none; font-family: 'Barlow', sans-serif; }
-
-  /* SYNC TOAST */
-  #sync-toast {
-    position: fixed; bottom: 24px; right: 24px;
-    background: var(--surface); border: 1px solid #4ade80; color: #4ade80;
-    padding: 10px 18px; border-radius: 4px;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 1px;
-    z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none;
-    display: flex; align-items: center; gap: 8px;
-  }
-  #sync-toast.show { opacity: 1; }
-
-  @media (max-width: 900px) {
-    .teams-grid, .scoreboard, .manage-grid { grid-template-columns: 1fr; }
-    .form-row { grid-template-columns: 1fr 1fr; }
-    header { flex-wrap: wrap; }
-    nav { width: 100%; overflow-x: auto; }
-    .logo { font-size: 38px; }
-  }
-
-  /* NEWS FEED */
-  .news-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    transition: border-color 0.2s, transform 0.15s;
-  }
-  .news-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .news-card-header {
-    padding: 10px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .news-card-header.t1 { background: rgba(26,110,60,0.25); border-left: 3px solid #1a6e3c; }
-  .news-card-header.t2 { background: rgba(26,61,110,0.25); border-left: 3px solid #1a3d6e; }
-  .news-card-header.t3 { background: rgba(110,26,26,0.25); border-left: 3px solid #6e1a1a; }
-  .news-card-rider { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 1px; flex: 1; }
-  .news-card-team { font-size: 10px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; color: var(--muted); }
-  .news-card-body { padding: 0; flex: 1; display: flex; flex-direction: column; }
-  .news-article { padding: 11px 14px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
-  .news-article:last-child { border-bottom: none; }
-  .news-article a { color: var(--text); text-decoration: none; font-size: 13px; font-weight: 500; line-height: 1.4; transition: color 0.15s; }
-  .news-article a:hover { color: var(--accent); }
-  .news-article-meta { font-size: 11px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
-  .news-card-loading { padding: 20px 14px; color: var(--muted); font-size: 12px; display: flex; align-items: center; gap: 8px; }
-  .news-card-empty { padding: 16px 14px; color: var(--muted); font-size: 12px; font-style: italic; }
-  .news-card-error { padding: 12px 14px; color: var(--accent2); font-size: 11px; }
-  .news-hidden { display: none !important; }
-
+@media(max-width:900px){
+  .tgrid,.sbrd,.mgrid{grid-template-columns:1fr}
+  .frow{grid-template-columns:1fr 1fr}
+  header{flex-wrap:wrap}
+  nav{width:100%;overflow-x:auto}
+  .logo{font-size:38px}
+}
 </style>
 </head>
 <body>
 
-<!-- LOADER -->
-<div id="app-loader">
-  <div class="loader-title">DS 2026</div>
-  <div class="loader-sub">Verbinding maken met database...</div>
-  <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+<div id="loader">
+  <div class="lt">DS 2026</div>
+  <div class="ls">Verbinding maken met database...</div>
+  <div class="lbar"><div class="lbar-fill"></div></div>
 </div>
 
 <header>
-  <div class="logo">
-    <span>Directeur Sportief</span>
-    2026
-  </div>
-  <div class="db-status">
-    <div class="db-dot" id="db-dot"></div>
-    <span id="db-status-text">Verbinden...</span>
-  </div>
+  <div class="logo"><span>Directeur Sportief</span>2026</div>
+  <div class="dbst"><div class="dbd" id="dbd"></div><span id="dbst">Verbinden...</span></div>
   <nav>
-    <button class="active" onclick="showTab('teams', this)">Mijn Teams</button>
-    <button onclick="showTab('races', this)">Wedstrijden</button>
-    <button onclick="showTab('scores', this)">Puntenstand</button>
-    <button onclick="showTab('manage', this)">Beheer</button>
-    <button onclick="showTab('news', this)">Nieuws</button>
+    <button class="active" onclick="showTab('teams',this)">Mijn Teams</button>
+    <button onclick="showTab('races',this)">Wedstrijden</button>
+    <button onclick="showTab('scores',this)">Puntenstand</button>
+    <button onclick="showTab('manage',this)">Beheer</button>
+    <button onclick="showTab('news',this)">Nieuws</button>
   </nav>
 </header>
 
 <main>
-  <!-- TEAMS -->
-  <div class="tab-content active" id="tab-teams">
-    <div class="section-title">Mijn Poule Teams</div>
-    <div class="teams-grid" id="teams-grid"></div>
-  </div>
 
-  <!-- RACES -->
-  <div class="tab-content" id="tab-races">
-    <div class="section-title">Wedstrijdkalender 2026</div>
-    <table class="races-table">
-      <thead><tr><th>#</th><th>Wedstrijd</th><th>Type</th><th>Datum</th><th>Starters</th></tr></thead>
-      <tbody id="races-tbody"></tbody>
-    </table>
-  </div>
+<div class="tab active" id="tab-teams">
+  <div class="sec">Mijn Poule Teams</div>
+  <div class="tgrid" id="teams-grid"></div>
+</div>
 
-  <!-- SCORES -->
-  <div class="tab-content" id="tab-scores">
-    <div class="section-title">Scorebord</div>
-    <div class="scoreboard" id="scoreboard"></div>
+<div class="tab" id="tab-races">
+  <div class="sec">Wedstrijdkalender 2026</div>
+  <table class="rtbl">
+    <thead><tr><th>#</th><th>Wedstrijd</th><th>Type</th><th>Datum</th><th>Starters</th></tr></thead>
+    <tbody id="races-tbody"></tbody>
+  </table>
+</div>
 
-    <div class="section-title">Uitslag invoeren</div>
-    <div class="score-form">
-      <h3>Nieuwe uitslag</h3>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Renner</label>
-          <select id="score-rider"><option value="">Kies renner...</option></select>
-        </div>
-        <div class="form-group">
-          <label>Wedstrijd</label>
-          <select id="score-race"><option value="">Kies wedstrijd...</option></select>
-        </div>
-        <div class="form-group">
-          <label>Positie</label>
-          <select id="score-pos">
-            <option value="1">1e plaats</option>
-            <option value="2">2e plaats</option>
-            <option value="3">3e plaats</option>
-            <option value="4">4e plaats</option>
-            <option value="5">5e plaats</option>
-            <option value="6">6e plaats</option>
-            <option value="7">7e plaats</option>
-            <option value="8">8e plaats</option>
-            <option value="9">9e plaats</option>
-            <option value="10">10e plaats</option>
-            <option value="etappe">Etappezege</option>
-          </select>
-        </div>
-        <button class="btn-primary" onclick="addScore()">Opslaan</button>
-      </div>
-    </div>
-
-    <div class="section-title">Ingevoerde uitslagen</div>
-    <table class="results-table">
-      <thead><tr><th>Renner</th><th>Team</th><th>Wedstrijd</th><th>Positie</th><th>Punten</th><th></th></tr></thead>
-      <tbody id="results-tbody"></tbody>
-    </table>
-  </div>
-
-  <!-- MANAGE -->
-  <div class="tab-content" id="tab-manage">
-    <div class="section-title">Renners beheren</div>
-    <div class="manage-grid">
-      <div class="score-card">
-        <div class="score-card-header t1"><span class="score-card-name">Team 1</span></div>
-        <div class="score-breakdown" id="manage-t1-list"></div>
-        <div style="padding:0 16px 14px;display:flex;gap:8px;">
-          <input class="manage-input" id="new-rider-t1" placeholder="Naam renner toevoegen...">
-          <button class="btn-primary" onclick="addRider(1)" style="padding:8px 14px;">+</button>
-        </div>
-      </div>
-      <div class="score-card">
-        <div class="score-card-header t2"><span class="score-card-name">Team 2</span></div>
-        <div class="score-breakdown" id="manage-t2-list"></div>
-        <div style="padding:0 16px 14px;display:flex;gap:8px;">
-          <input class="manage-input" id="new-rider-t2" placeholder="Naam renner toevoegen...">
-          <button class="btn-primary" onclick="addRider(2)" style="padding:8px 14px;">+</button>
-        </div>
-      </div>
-      <div class="score-card">
-        <div class="score-card-header t3"><span class="score-card-name">Team 3</span></div>
-        <div class="score-breakdown" id="manage-t3-list"></div>
-        <div style="padding:0 16px 14px;display:flex;gap:8px;">
-          <input class="manage-input" id="new-rider-t3" placeholder="Naam renner toevoegen...">
-          <button class="btn-primary" onclick="addRider(3)" style="padding:8px 14px;">+</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-title">Wedstrijden beheren</div>
-    <div class="add-race-form">
-      <input id="new-race-name" placeholder="Naam wedstrijd...">
-      <select id="new-race-type">
-        <option value="Eendaagse">Eendaagse</option>
-        <option value="Monument">Monument</option>
-        <option value="Rittenkoers">Rittenkoers</option>
-        <option value="Grote Ronde">Grote Ronde</option>
-        <option value="Divers">Divers</option>
-      </select>
-      <input id="new-race-date" placeholder="Datum (bijv. 28 feb 2026)">
-      <button class="btn-primary" onclick="addRace()">+ Toevoegen</button>
-    </div>
-    <div id="manage-races-list"></div>
-  </div>
-
-  <!-- NEWS -->
-  <div class="tab-content" id="tab-news">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
-      <div class="section-title" style="margin-bottom:0">Renners Nieuws</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <select id="news-team-filter" onchange="filterNews()" 
-          style="background:var(--surface2);border:1px solid var(--border);color:var(--text);
-                 padding:8px 12px;border-radius:3px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;">
-          <option value="all">Alle teams</option>
-          <option value="1">Team 1</option>
-          <option value="2">Team 2</option>
-          <option value="3">Team 3</option>
+<div class="tab" id="tab-scores">
+  <div class="sec">Scorebord</div>
+  <div class="sbrd" id="scoreboard"></div>
+  <div class="sec">Uitslag invoeren</div>
+  <div class="sform">
+    <h3>Nieuwe uitslag</h3>
+    <div class="frow">
+      <div class="fg"><label>Renner</label><select id="sc-rider"><option value="">Kies renner...</option></select></div>
+      <div class="fg"><label>Wedstrijd</label><select id="sc-race"><option value="">Kies wedstrijd...</option></select></div>
+      <div class="fg"><label>Positie</label>
+        <select id="sc-pos">
+          <option value="1">1e plaats</option><option value="2">2e plaats</option><option value="3">3e plaats</option>
+          <option value="4">4e plaats</option><option value="5">5e plaats</option><option value="6">6e plaats</option>
+          <option value="7">7e plaats</option><option value="8">8e plaats</option><option value="9">9e plaats</option>
+          <option value="10">10e plaats</option><option value="etappe">Etappezege</option>
         </select>
-        <button class="btn-primary" onclick="loadAllNews()" id="news-reload-btn" style="padding:8px 18px;font-size:13px;">
-          🔄 Nieuws laden
-        </button>
       </div>
-    </div>
-
-    <div id="news-status" style="display:none;padding:14px 18px;background:var(--surface);border:1px solid var(--border);
-         border-radius:4px;margin-bottom:20px;font-size:13px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;
-         letter-spacing:1px;">
-      Bezig met laden...
-    </div>
-
-    <div id="news-feed" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;">
-      <div class="empty-state" style="grid-column:1/-1">
-        Klik op "Nieuws laden" om het laatste nieuws van alle renners op te halen.
-      </div>
+      <button class="bp" onclick="addScore()">Opslaan</button>
     </div>
   </div>
+  <div class="sec">Ingevoerde uitslagen</div>
+  <table class="restbl">
+    <thead><tr><th>Renner</th><th>Team</th><th>Wedstrijd</th><th>Positie</th><th>Punten</th><th></th></tr></thead>
+    <tbody id="res-tbody"></tbody>
+  </table>
+</div>
+
+<div class="tab" id="tab-manage">
+  <div class="sec">Renners beheren</div>
+  <div style="margin-bottom:20px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;margin-bottom:4px">Teams resetten</div>
+      <div style="font-size:12px;color:var(--muted)">Zet alle 30 renners terug naar de originele indeling.</div>
+    </div>
+    <button class="bp" onclick="resetTeams()" style="background:var(--accent2)">&#8635; Reset naar origineel</button>
+  </div>
+  <div class="mgrid">
+    <div class="sc"><div class="sch t1"><span class="scn">Team 1</span></div><div class="scb" id="mt1"></div>
+      <div style="padding:0 16px 14px;display:flex;gap:8px"><input class="mi" id="nr-t1" placeholder="Renner toevoegen..." style="flex:1"><button class="bp" onclick="addRider(1)" style="padding:8px 14px">+</button></div></div>
+    <div class="sc"><div class="sch t2"><span class="scn">Team 2</span></div><div class="scb" id="mt2"></div>
+      <div style="padding:0 16px 14px;display:flex;gap:8px"><input class="mi" id="nr-t2" placeholder="Renner toevoegen..." style="flex:1"><button class="bp" onclick="addRider(2)" style="padding:8px 14px">+</button></div></div>
+    <div class="sc"><div class="sch t3"><span class="scn">Team 3</span></div><div class="scb" id="mt3"></div>
+      <div style="padding:0 16px 14px;display:flex;gap:8px"><input class="mi" id="nr-t3" placeholder="Renner toevoegen..." style="flex:1"><button class="bp" onclick="addRider(3)" style="padding:8px 14px">+</button></div></div>
+  </div>
+  <div class="sec">Wedstrijden beheren</div>
+  <div class="arf">
+    <input id="nr-race" placeholder="Naam wedstrijd...">
+    <select id="nr-type"><option value="Eendaagse">Eendaagse</option><option value="Monument">Monument</option><option value="Rittenkoers">Rittenkoers</option><option value="Grote Ronde">Grote Ronde</option><option value="Divers">Divers</option></select>
+    <input id="nr-date" placeholder="Datum">
+    <button class="bp" onclick="addRace()">+ Toevoegen</button>
+  </div>
+  <div id="manage-races"></div>
+</div>
+
+<div class="tab" id="tab-news">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+    <div class="sec" style="margin-bottom:0">Renners Nieuws</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <select id="nf" onchange="filterNews()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:3px;font-family:'Barlow',sans-serif;font-size:13px;outline:none">
+        <option value="0">Alle teams</option><option value="1">Team 1</option><option value="2">Team 2</option><option value="3">Team 3</option>
+      </select>
+      <button class="bp" onclick="loadNews()" id="news-btn" style="padding:8px 18px;font-size:13px">&#128260; Nieuws laden (laatste 2 weken)</button>
+    </div>
+  </div>
+  <div id="news-status" style="display:none;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:20px;font-size:13px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px"></div>
+  <div class="ngrid" id="news-grid"><div class="empty" style="grid-column:1/-1">Klik op "Nieuws laden" om het nieuws van de afgelopen 2 weken op te halen.</div></div>
+</div>
 
 </main>
 
-<!-- MODAL -->
-<div id="modal" class="modal-overlay" style="display:none;" onclick="closeModalOverlay(event)">
-  <div class="modal">
-    <div class="modal-header">
-      <span class="modal-title" id="modal-title">—</span>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-body" id="modal-body"></div>
+<div id="modal" class="mov" style="display:none" onclick="overlayClose(event)">
+  <div class="mo">
+    <div class="moh"><span class="mot" id="modal-title">—</span><button class="moc" onclick="closeModal()">&#10005;</button></div>
+    <div class="mob" id="modal-body"></div>
   </div>
 </div>
 
-<!-- SYNC TOAST -->
-<div id="sync-toast">🔄 Data bijgewerkt</div>
+<div id="toast">&#128260; Data bijgewerkt</div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, push, remove, update }
-  from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-// ═══════════════════════════════════
-// FIREBASE INIT
-// ═══════════════════════════════════
-const firebaseConfig = {
+const fbapp = initializeApp({
   apiKey: "AIzaSyArBhELl7gsMceNOkLloVSsdcjMjnm3_X0",
   authDomain: "wielerpoule-2026.firebaseapp.com",
   databaseURL: "https://wielerpoule-2026-default-rtdb.europe-west1.firebasedatabase.app",
@@ -503,21 +276,16 @@ const firebaseConfig = {
   storageBucket: "wielerpoule-2026.firebasestorage.app",
   messagingSenderId: "976087528286",
   appId: "1:976087528286:web:2ffeec66b1488d27e395cf"
-};
+});
+const db = getDatabase(fbapp);
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// ═══════════════════════════════════
-// DEFAULT DATA
-// ═══════════════════════════════════
-const DEFAULT_TEAMS = {
+const DT = {
   1: ["DEL TORO ROMERO Isaac","CHRISTEN Jan","TULETT Ben","MILAN Matteo","MILAN Jonathan","DECOMBLE Maxime","De JONG Timo","REMIJN Senna","KUBIS Lukas","VAN EETVELT Lennert"],
   2: ["VAN DER POEL Mathieu","JOHANNESSEN Tobias","PEDERSEN Mads","WAERENSKJOLD Soren","GODON Dorian","ALBANESE Vincenzo","BISSEGGER Stefan","KOCKELMANN Mathieu","RENARD Alexis","VERMEERSCH Gianni"],
   3: ["VINGEGAARD RASMUSSEN Jonas","VAN BAARLE Dylan","VINE Jay","LIPOWITZ Florian","SIMMONS Quinn","MATTHEWS Michael","GROENEWEGEN Dylan","SYRITSA Gleb","SODERQVIST Jakob","AUGUST Andrew"]
 };
 
-const DEFAULT_RACES = [
+const DR = [
   {id:1,name:"Omloop het Nieuwsblad",type:"Eendaagse",date:"28 feb 2026"},
   {id:2,name:"Strade Bianche",type:"Monument",date:"7 mrt 2026"},
   {id:3,name:"Parijs-Nice",type:"Rittenkoers",date:"9 mrt 2026"},
@@ -545,664 +313,505 @@ const DEFAULT_RACES = [
   {id:25,name:"La Vuelta Ciclista a España",type:"Grote Ronde",date:"22 aug 2026"},
   {id:26,name:"GP Québec",type:"Eendaagse",date:"11 sep 2026"},
   {id:27,name:"GP Montréal",type:"Eendaagse",date:"13 sep 2026"},
-  {id:28,name:"WK (tijdrit)",type:"Divers",date:"20 sep 2026"},
+  {id:28,name:"WK (tijdrit)",type:"Divers",date:"20 sep 2026"}
 ];
 
-const POINT_TABLES = {
-  Eendaagse:     [200,161,136,116,101,87,76,65,56,47],
-  Monument:      [300,241,203,173,149,129,111,96,81,68],
-  Rittenkoers:   { eindkl:[250,207,179,157,140,125,112,100,90,80], etappe:70 },
-  'Grote Ronde': { eindkl:[450,372,321,283,251,224,201,180,161,143], etappe:70 },
-  Divers:        [250,189,149,119,94,73,55,38,24,10]
+const PCS = {
+  "Omloop het Nieuwsblad":"omloop-het-nieuwsblad",
+  "Strade Bianche":"strade-bianche",
+  "Parijs-Nice":"paris-nice",
+  "Tirreno Adriatico":"tirreno-adriatico",
+  "Milaan - San Remo":"milano-sanremo",
+  "E3 Prijs":"e3-saxo-bank-classic",
+  "Gent - Wevelgem":"gent-wevelgem",
+  "Ronde van Catalonië":"volta-a-catalunya",
+  "Dwars door Vlaanderen":"dwars-door-vlaanderen",
+  "Ronde van Vlaanderen":"ronde-van-vlaanderen",
+  "Scheldeprijs":"scheldeprijs",
+  "Ronde van het Baskenland":"itzulia-basque-country",
+  "Parijs - Roubaix":"paris-roubaix",
+  "Amstel Gold Race":"amstel-gold-race",
+  "Waalse Pijl":"la-fleche-wallonne",
+  "Luik - Bastenaken - Luik":"liege-bastogne-liege",
+  "Ronde van Romandië":"tour-de-romandie",
+  "Giro d'Italia":"giro-d-italia",
+  "Critérium du Dauphiné":"criterium-du-dauphine",
+  "Ronde van Zwitserland":"tour-de-suisse",
+  "NK Wielrennen":"netherlands-championships-rr",
+  "Tour de France":"tour-de-france",
+  "Clasica San Sebastian":"clasica-ciclista-san-sebastian",
+  "Renewi Tour (Benelux)":"renewi-tour",
+  "La Vuelta Ciclista a España":"vuelta-a-espana",
+  "GP Québec":"gp-de-quebec",
+  "GP Montréal":"gp-de-montreal",
+  "WK (tijdrit)":"uci-road-world-championships"
 };
 
-// ═══════════════════════════════════
-// STATE (synced from Firebase)
-// ═══════════════════════════════════
-let state = { teams: DEFAULT_TEAMS, races: DEFAULT_RACES, scores: {}, nextRaceId: 100 };
-let firstLoad = true;
+const PTB = {
+  Eendaagse:[200,161,136,116,101,87,76,65,56,47],
+  Monument:[300,241,203,173,149,129,111,96,81,68],
+  Rittenkoers:{kl:[250,207,179,157,140,125,112,100,90,80],et:70},
+  "Grote Ronde":{kl:[450,372,321,283,251,224,201,180,161,143],et:70},
+  Divers:[250,189,149,119,94,73,55,38,24,10]
+};
 
-// ═══════════════════════════════════
-// FIREBASE LISTENERS (realtime)
-// ═══════════════════════════════════
-async function initFirebase() {
-  try {
-    // Check if data exists, seed defaults if not
-    const snap = await get(ref(db, 'wielerpoule'));
-    if (!snap.exists()) {
-      await set(ref(db, 'wielerpoule'), {
-        teams: DEFAULT_TEAMS,
-        races: DEFAULT_RACES,
-        scores: {},
-        nextRaceId: 100
-      });
-    }
+let S = {teams:{1:[],2:[],3:[]}, races:[], scores:{}, nextId:100};
+let first = true;
+const ncache = {};
 
-    // Realtime listener
-    onValue(ref(db, 'wielerpoule'), (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const wasFirst = firstLoad;
-        firstLoad = false;
-        state.teams = data.teams || DEFAULT_TEAMS;
-        state.races = data.races || DEFAULT_RACES;
-        state.scores = data.scores || {};
-        state.nextRaceId = data.nextRaceId || 100;
-        render();
-        if (!wasFirst) showToast();
-      }
-      setConnected(true);
-      hideLoader();
-    }, (error) => {
-      setConnected(false);
-      hideLoader();
-      console.error('Firebase error:', error);
-    });
-
-  } catch (e) {
-    setConnected(false);
-    hideLoader();
-    console.error('Firebase init error:', e);
-  }
+function getTeam(t) {
+  let r = S.teams[t] || S.teams[String(t)] || [];
+  if (!Array.isArray(r)) r = Object.values(r);
+  const out = r.filter(v => typeof v === "string" && v.trim());
+  return out.length >= 5 ? out : (DT[t] || []);
 }
 
-function hideLoader() {
-  const loader = document.getElementById('app-loader');
-  loader.classList.add('hidden');
-  setTimeout(() => loader.style.display = 'none', 500);
+function allR() {
+  const a = [];
+  [1,2,3].forEach(t => getTeam(t).forEach(n => a.push({name:n,team:t})));
+  return a;
 }
 
-function setConnected(ok) {
-  const dot = document.getElementById('db-dot');
-  const txt = document.getElementById('db-status-text');
-  dot.className = 'db-dot ' + (ok ? 'connected' : 'error');
-  txt.textContent = ok ? 'Live verbonden' : 'Verbinding verbroken';
-}
-
-function showToast() {
-  const t = document.getElementById('sync-toast');
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ═══════════════════════════════════
-// SAVE HELPERS
-// ═══════════════════════════════════
-async function saveTeams() {
-  await set(ref(db, 'wielerpoule/teams'), state.teams);
-}
-async function saveRaces() {
-  await set(ref(db, 'wielerpoule/races'), state.races);
-  await set(ref(db, 'wielerpoule/nextRaceId'), state.nextRaceId);
-}
-async function saveScores() {
-  await set(ref(db, 'wielerpoule/scores'), state.scores);
-}
-
-// ═══════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════
-function calcPoints(type, position) {
-  if (position === 'etappe') {
-    const t = POINT_TABLES[type];
-    return (t && t.etappe) ? t.etappe : 0;
-  }
-  const idx = parseInt(position) - 1;
-  const t = POINT_TABLES[type];
+function pts(type, pos) {
+  if (pos === "etappe") { const t = PTB[type]; return t && t.et ? t.et : 0; }
+  const i = parseInt(pos) - 1;
+  const t = PTB[type];
   if (!t) return 0;
-  if (Array.isArray(t)) return t[idx] || 0;
-  if (t.eindkl) return t.eindkl[idx] || 0;
-  return 0;
+  if (Array.isArray(t)) return t[i] || 0;
+  return t.kl ? t.kl[i] || 0 : 0;
 }
 
-function raceTypeClass(type) {
-  return { Monument:'monument', 'Grote Ronde':'grande', Rittenkoers:'rit', Divers:'divers' }[type] || '';
+function sarr() {
+  return Object.entries(S.scores || {}).map(([k,v]) => ({...v, _k:k}));
 }
 
-function scoresArray() {
-  return Object.entries(state.scores || {}).map(([k,v]) => ({...v, _key: k}));
+function tpts(t) {
+  return sarr().filter(s => s.team === t).reduce((a,b) => a+(b.points||0), 0);
 }
 
-function teamTotalPts(teamNum) {
-  return scoresArray().filter(s => s.team === teamNum).reduce((a,b) => a + (b.points||0), 0);
+function rtc(type) {
+  return {Monument:"monument","Grote Ronde":"grande",Rittenkoers:"rit",Divers:"divers"}[type] || "";
 }
 
-// ═══════════════════════════════════
-// TABS
-// ═══════════════════════════════════
+async function initDB() {
+  try {
+    const snap = await get(ref(db,"wielerpoule"));
+    if (!snap.exists()) {
+      await set(ref(db,"wielerpoule"), {teams:DT, races:DR, scores:{}, nextId:100});
+    }
+    onValue(ref(db,"wielerpoule"), snap => {
+      const d = snap.val();
+      if (d) {
+        const rt = d.teams || DT;
+        S.teams = {};
+        [1,2,3].forEach(t => {
+          let r = rt[t] || rt[String(t)] || DT[t] || [];
+          if (!Array.isArray(r)) r = Object.values(r);
+          S.teams[t] = r.filter(v => typeof v === "string" && v.trim());
+        });
+        S.races = d.races || DR;
+        S.scores = d.scores || {};
+        S.nextId = d.nextId || 100;
+        render();
+        if (!first) toast();
+        first = false;
+      }
+      conn(true);
+      hideL();
+    }, e => { conn(false); hideL(); });
+  } catch(e) { conn(false); hideL(); }
+}
+
+function hideL() {
+  const el = document.getElementById("loader");
+  el.classList.add("hidden");
+  setTimeout(() => { el.style.display = "none"; }, 500);
+}
+
+function conn(ok) {
+  document.getElementById("dbd").className = "dbd " + (ok ? "on" : "err");
+  document.getElementById("dbst").textContent = ok ? "Live verbonden" : "Verbinding verbroken";
+}
+
+function toast() {
+  const t = document.getElementById("toast");
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
 window.showTab = function(name, btn) {
-  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  if (btn) btn.classList.add('active');
-  render();
+  document.querySelectorAll(".tab").forEach(el => el.classList.remove("active"));
+  document.querySelectorAll("nav button").forEach(el => el.classList.remove("active"));
+  document.getElementById("tab-"+name).classList.add("active");
+  if (btn) btn.classList.add("active");
 };
 
-// ═══════════════════════════════════
-// RENDER
-// ═══════════════════════════════════
 function render() {
   renderTeams();
   renderRaces();
   renderScores();
   renderManage();
-  populateSelects();
+  renderSelects();
 }
 
 function renderTeams() {
-  const g = document.getElementById('teams-grid');
+  const g = document.getElementById("teams-grid");
   if (!g) return;
-  g.innerHTML = '';
+  g.innerHTML = "";
   [1,2,3].forEach(t => {
-    const riders = state.teams[t] || [];
-    const total = teamTotalPts(t);
-    let html = `<div class="team-card">
-      <div class="team-header t${t}"><span>Team ${t}</span><span class="team-total">${total} pts</span></div>`;
+    const riders = getTeam(t);
+    let html = '<div class="tcard"><div class="thead t'+t+'"><span>Team '+t+'</span><span class="tpts">'+tpts(t)+' pts</span></div>';
     riders.forEach(r => {
-      const rPts = scoresArray().filter(s => s.riderName === r).reduce((a,b)=>a+(b.points||0),0);
-      html += `<div class="rider-row">
-        <span class="rider-name">${r}</span>
-        <span class="rider-pts">${rPts ? rPts : ''}</span>
-        <button class="news-btn" onclick="fetchRiderNews('${r.replace(/'/g,"\\'")}')">Nieuws</button>
-      </div>`;
+      const rp = sarr().filter(s => s.riderName === r).reduce((a,b) => a+(b.points||0), 0);
+      const safe = r.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+      html += '<div class="rrow"><span class="rname">'+r+'</span><span class="rpts">'+(rp||"")+'</span><button class="nbtn" onclick="riderNews(\''+safe+'\')">Nieuws</button></div>';
     });
-    html += '</div>';
+    html += "</div>";
     g.innerHTML += html;
   });
 }
 
 function renderRaces() {
-  const tb = document.getElementById('races-tbody');
+  const tb = document.getElementById("races-tbody");
   if (!tb) return;
-  tb.innerHTML = '';
-  (state.races || []).forEach((r, i) => {
-    const safe = r.name.replace(/'/g, "\\'");
-    tb.innerHTML += `<tr class="clickable-row" onclick="checkRaceStarters(${r.id}, '${safe}')">
-      <td style="color:var(--muted);font-size:12px">${i+1}</td>
-      <td style="font-weight:500">${r.name}</td>
-      <td><span class="race-type ${raceTypeClass(r.type)}">${r.type}</span></td>
-      <td style="color:var(--muted);font-size:12px">${r.date||''}</td>
-      <td><span class="starters-hint">🔍 Bekijk starters</span></td>
-    </tr>`;
+  tb.innerHTML = "";
+  (S.races||[]).forEach((r,i) => {
+    const safe = r.name.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
+    tb.innerHTML += '<tr class="crow" onclick="checkS('+r.id+',\''+safe+'\')">'
+      +'<td style="color:var(--muted);font-size:12px">'+(i+1)+'</td>'
+      +'<td style="font-weight:500">'+r.name+'</td>'
+      +'<td><span class="rt '+rtc(r.type)+'">'+r.type+'</span></td>'
+      +'<td style="color:var(--muted);font-size:12px">'+(r.date||"")+'</td>'
+      +'<td><span class="sh">&#128269; Bekijk starters</span></td>'
+      +'</tr>';
   });
 }
 
 function renderScores() {
-  const sb = document.getElementById('scoreboard');
+  const sb = document.getElementById("scoreboard");
   if (!sb) return;
-  sb.innerHTML = '';
-
+  sb.innerHTML = "";
   [1,2,3].forEach(t => {
-    const scores = scoresArray().filter(s => s.team === t);
-    const total = scores.reduce((a,b)=>a+(b.points||0),0);
-    const byRace = {};
-    scores.forEach(s => { byRace[s.raceName] = (byRace[s.raceName]||0)+(s.points||0); });
-    let breakdown = Object.entries(byRace).map(([race,pts]) =>
-      `<div class="score-row"><span>${race}</span><strong>${pts}</strong></div>`
-    ).join('');
-    if (!breakdown) breakdown = `<div class="score-row" style="justify-content:center">Nog geen punten</div>`;
-
-    sb.innerHTML += `<div class="score-card">
-      <div class="score-card-header t${t}">
-        <span class="score-card-name">Team ${t}</span>
-        <span class="score-card-total">${total}</span>
-      </div>
-      <div class="score-breakdown">${breakdown}</div>
-    </div>`;
+    const sc = sarr().filter(s => s.team === t);
+    const total = sc.reduce((a,b) => a+(b.points||0), 0);
+    const br = {};
+    sc.forEach(s => { br[s.raceName] = (br[s.raceName]||0)+(s.points||0); });
+    let bd = Object.entries(br).map(([rn,p]) => '<div class="sr"><span>'+rn+'</span><strong>'+p+'</strong></div>').join("");
+    if (!bd) bd = '<div class="sr" style="justify-content:center">Nog geen punten</div>';
+    sb.innerHTML += '<div class="sc"><div class="sch t'+t+'"><span class="scn">Team '+t+'</span><span class="sct">'+total+'</span></div><div class="scb">'+bd+'</div></div>';
   });
 
-  const tb = document.getElementById('results-tbody');
+  const tb = document.getElementById("res-tbody");
   if (!tb) return;
-  const all = scoresArray().reverse();
-  tb.innerHTML = '';
-  if (all.length === 0) {
-    tb.innerHTML = `<tr><td colspan="6" class="empty-state">Nog geen uitslagen ingevoerd</td></tr>`;
-  } else {
-    all.forEach(s => {
-      const posLabel = s.position === 'etappe' ? 'Etappezege' : `No. ${s.position}`;
-      tb.innerHTML += `<tr>
-        <td style="font-weight:500">${s.riderName}</td>
-        <td style="color:var(--muted);font-size:12px">Team ${s.team}</td>
-        <td>${s.raceName}</td>
-        <td style="color:var(--muted);font-size:12px">${posLabel}</td>
-        <td><span class="pts-badge">+${s.points}</span></td>
-        <td><button class="btn-danger" onclick="removeScore('${s._key}')">✕</button></td>
-      </tr>`;
-    });
-  }
+  const all = sarr().reverse();
+  if (!all.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">Nog geen uitslagen ingevoerd</td></tr>'; return; }
+  tb.innerHTML = all.map(s => {
+    const pl = s.position === "etappe" ? "Etappezege" : "No. "+s.position;
+    return '<tr><td style="font-weight:500">'+s.riderName+'</td><td style="color:var(--muted);font-size:12px">Team '+s.team+'</td><td>'+s.raceName+'</td><td style="color:var(--muted);font-size:12px">'+pl+'</td><td><span class="pts">+'+s.points+'</span></td><td><button class="bd" onclick="delScore(\''+s._k+'\')">&#10005;</button></td></tr>';
+  }).join("");
 }
 
 function renderManage() {
   [1,2,3].forEach(t => {
-    const list = document.getElementById(`manage-t${t}-list`);
-    if (!list) return;
-    const riders = state.teams[t] || [];
-    list.innerHTML = riders.map((r,i) =>
-      `<div class="score-row">
-        <strong style="font-size:12px">${r}</strong>
-        <button class="btn-danger" onclick="removeRider(${t},${i})" style="padding:3px 8px;font-size:11px">✕</button>
-      </div>`
-    ).join('') || '<div style="padding:8px 0;color:var(--muted);font-size:12px">Geen renners</div>';
+    const el = document.getElementById("mt"+t);
+    if (!el) return;
+    const riders = getTeam(t);
+    el.innerHTML = riders.map((r,i) => '<div class="sr"><strong style="font-size:12px">'+r+'</strong><button class="bd" onclick="delRider('+t+','+i+')" style="padding:3px 8px;font-size:11px">&#10005;</button></div>').join("")
+      || '<div style="padding:8px;color:var(--muted);font-size:12px">Geen renners</div>';
   });
-
-  const ml = document.getElementById('manage-races-list');
+  const ml = document.getElementById("manage-races");
   if (!ml) return;
-  ml.innerHTML = `<table class="races-table">
-    <thead><tr><th>Wedstrijd</th><th>Type</th><th>Datum</th><th></th></tr></thead>
-    <tbody>${(state.races||[]).map(r =>
-      `<tr>
-        <td style="font-weight:500">${r.name}</td>
-        <td><span class="race-type ${raceTypeClass(r.type)}">${r.type}</span></td>
-        <td style="color:var(--muted);font-size:12px">${r.date||''}</td>
-        <td><button class="btn-danger" onclick="removeRace(${r.id})">✕</button></td>
-      </tr>`
-    ).join('')}</tbody>
-  </table>`;
+  ml.innerHTML = '<table class="rtbl"><thead><tr><th>Wedstrijd</th><th>Type</th><th>Datum</th><th></th></tr></thead><tbody>'
+    +(S.races||[]).map(r => '<tr><td style="font-weight:500">'+r.name+'</td><td><span class="rt '+rtc(r.type)+'">'+r.type+'</span></td><td style="color:var(--muted);font-size:12px">'+(r.date||"")+'</td><td><button class="bd" onclick="delRace('+r.id+')">&#10005;</button></td></tr>').join("")
+    +'</tbody></table>';
 }
 
-function populateSelects() {
-  const riderSel = document.getElementById('score-rider');
-  const raceSel = document.getElementById('score-race');
-  if (!riderSel || !raceSel) return;
-  const pr = riderSel.value, prace = raceSel.value;
-
-  riderSel.innerHTML = '<option value="">Kies renner...</option>';
-  [1,2,3].forEach(t => {
-    (state.teams[t]||[]).forEach(r => {
-      riderSel.innerHTML += `<option value="${r}|${t}">${r} (Team ${t})</option>`;
-    });
-  });
-
-  raceSel.innerHTML = '<option value="">Kies wedstrijd...</option>';
-  (state.races||[]).forEach(r => {
-    raceSel.innerHTML += `<option value="${r.id}">${r.name}</option>`;
-  });
-
-  if (pr) riderSel.value = pr;
-  if (prace) raceSel.value = prace;
+function renderSelects() {
+  const rs = document.getElementById("sc-rider");
+  const rc = document.getElementById("sc-race");
+  if (!rs||!rc) return;
+  const pr = rs.value, prc = rc.value;
+  rs.innerHTML = '<option value="">Kies renner...</option>';
+  [1,2,3].forEach(t => getTeam(t).forEach(r => { rs.innerHTML += '<option value="'+r+'|'+t+'">'+r+' (Team '+t+')</option>'; }));
+  rc.innerHTML = '<option value="">Kies wedstrijd...</option>';
+  (S.races||[]).forEach(r => { rc.innerHTML += '<option value="'+r.id+'">'+r.name+'</option>'; });
+  if (pr) rs.value = pr;
+  if (prc) rc.value = prc;
 }
 
-// ═══════════════════════════════════
-// ACTIONS
-// ═══════════════════════════════════
 window.addScore = async function() {
-  const rv = document.getElementById('score-rider').value;
-  const raceId = parseInt(document.getElementById('score-race').value);
-  const pos = document.getElementById('score-pos').value;
-  if (!rv || !raceId) return alert('Kies een renner en wedstrijd');
-
-  const [riderName, teamStr] = rv.split('|');
-  const teamNum = parseInt(teamStr);
-  const race = (state.races||[]).find(r => r.id === raceId);
+  const rv = document.getElementById("sc-rider").value;
+  const rid = parseInt(document.getElementById("sc-race").value);
+  const pos = document.getElementById("sc-pos").value;
+  if (!rv||!rid) return alert("Kies een renner en wedstrijd");
+  const [rn,ts] = rv.split("|");
+  const race = (S.races||[]).find(r => r.id===rid);
   if (!race) return;
-
-  const pts = calcPoints(race.type, pos);
-  const newScore = { riderName, team: teamNum, raceId: race.id, raceName: race.name, raceType: race.type, position: pos, points: pts, ts: Date.now() };
-
-  const scoresRef = ref(db, 'wielerpoule/scores');
-  await push(scoresRef, newScore);
+  await push(ref(db,"wielerpoule/scores"), {riderName:rn, team:parseInt(ts), raceId:race.id, raceName:race.name, raceType:race.type, position:pos, points:pts(race.type,pos), ts:Date.now()});
 };
 
-window.removeScore = async function(key) {
-  await remove(ref(db, `wielerpoule/scores/${key}`));
-};
+window.delScore = async function(k) { await remove(ref(db,"wielerpoule/scores/"+k)); };
 
-window.addRider = async function(teamNum) {
-  const input = document.getElementById(`new-rider-t${teamNum}`);
-  const name = input.value.trim().toUpperCase();
+window.addRider = async function(t) {
+  const inp = document.getElementById("nr-t"+t);
+  const name = inp.value.trim().toUpperCase();
   if (!name) return;
-  const riders = [...(state.teams[teamNum]||[]), name];
-  await set(ref(db, `wielerpoule/teams/${teamNum}`), riders);
-  input.value = '';
+  await set(ref(db,"wielerpoule/teams/"+t), [...getTeam(t), name]);
+  inp.value = "";
 };
 
-window.removeRider = async function(teamNum, idx) {
-  const riders = [...(state.teams[teamNum]||[])];
-  riders.splice(idx, 1);
-  await set(ref(db, `wielerpoule/teams/${teamNum}`), riders);
+window.delRider = async function(t, i) {
+  const r = [...getTeam(t)];
+  r.splice(i,1);
+  await set(ref(db,"wielerpoule/teams/"+t), r);
 };
 
 window.addRace = async function() {
-  const name = document.getElementById('new-race-name').value.trim();
-  const type = document.getElementById('new-race-type').value;
-  const date = document.getElementById('new-race-date').value.trim();
+  const name = document.getElementById("nr-race").value.trim();
+  const type = document.getElementById("nr-type").value;
+  const date = document.getElementById("nr-date").value.trim();
   if (!name) return;
-  const races = [...(state.races||[]), { id: state.nextRaceId, name, type, date }];
-  await set(ref(db, 'wielerpoule/races'), races);
-  await set(ref(db, 'wielerpoule/nextRaceId'), state.nextRaceId + 1);
-  document.getElementById('new-race-name').value = '';
-  document.getElementById('new-race-date').value = '';
+  await set(ref(db,"wielerpoule/races"), [...(S.races||[]), {id:S.nextId, name, type, date}]);
+  await set(ref(db,"wielerpoule/nextId"), S.nextId+1);
+  document.getElementById("nr-race").value = "";
+  document.getElementById("nr-date").value = "";
 };
 
-window.removeRace = async function(id) {
-  const races = (state.races||[]).filter(r => r.id !== id);
-  await set(ref(db, 'wielerpoule/races'), races);
+window.delRace = async function(id) {
+  await set(ref(db,"wielerpoule/races"), (S.races||[]).filter(r => r.id!==id));
 };
 
-// ═══════════════════════════════════
-// MODAL
-// ═══════════════════════════════════
-window.openModal = function(title, bodyHtml) {
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-body').innerHTML = bodyHtml;
-  document.getElementById('modal').style.display = 'flex';
+window.resetTeams = async function() {
+  if (!confirm("Weet je zeker dat je alle teams wilt resetten naar de originele 30 renners?")) return;
+  await set(ref(db,"wielerpoule/teams"), DT);
+  alert("Teams gereset naar origineel!");
 };
 
-window.closeModal = function() {
-  document.getElementById('modal').style.display = 'none';
+function openModal(title, body) {
+  document.getElementById("modal-title").textContent = title;
+  document.getElementById("modal-body").innerHTML = body;
+  document.getElementById("modal").style.display = "flex";
+}
+
+window.closeModal = function() { document.getElementById("modal").style.display = "none"; };
+window.overlayClose = function(e) { if (e.target===document.getElementById("modal")) closeModal(); };
+
+window.riderNews = function(name) {
+  const q = encodeURIComponent(name+" wielrenner 2026");
+  const slug = name.toLowerCase().replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,"");
+  openModal("Nieuws: "+name,
+    '<p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">Klik op een link om het laatste nieuws te bekijken. Opent in een nieuw tabblad.</p>'
+    +'<div style="display:flex;flex-direction:column;gap:10px">'
+    +'<a href="https://news.google.com/search?q='+q+'&hl=nl&gl=NL&ceid=NL:nl" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);padding:14px 18px;border-radius:4px;text-decoration:none" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+    +'<span style="font-size:22px">&#128240;</span><div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">Google News</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Laatste nieuws over '+name+'</div></div><span style="margin-left:auto;color:var(--accent)">&#8599;</span></a>'
+    +'<a href="https://www.wielerflits.nl/?s='+encodeURIComponent(name)+'" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);padding:14px 18px;border-radius:4px;text-decoration:none" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+    +'<span style="font-size:22px">&#128690;</span><div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">Wielerflits</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Nederlandstalig wielrennen nieuws</div></div><span style="margin-left:auto;color:var(--accent)">&#8599;</span></a>'
+    +'<a href="https://www.procyclingstats.com/rider/'+slug+'" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);padding:14px 18px;border-radius:4px;text-decoration:none" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
+    +'<span style="font-size:22px">&#128202;</span><div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">ProcyclingStats</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Statistieken & profiel</div></div><span style="margin-left:auto;color:var(--accent)">&#8599;</span></a>'
+    +'</div>');
 };
 
-window.closeModalOverlay = function(e) {
-  if (e.target === document.getElementById('modal')) closeModal();
-};
+// Normalize string: lowercase, no accents, only a-z and spaces
+function norm(s) {
+  return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z\s]/g," ").replace(/\s+/g," ").trim();
+}
 
-// ═══════════════════════════════════
-// NIEUWS
-// ═══════════════════════════════════
-window.fetchRiderNews = function(riderName) {
-  const q = encodeURIComponent(riderName + ' wielrenner 2026');
-  const googleNews = `https://news.google.com/search?q=${q}&hl=nl&gl=NL&ceid=NL:nl`;
-  const wielerflits = `https://www.wielerflits.nl/?s=${encodeURIComponent(riderName)}`;
-  // Build first+last name for PCS (poule format: "LASTNAME Firstname")
-  const parts = riderName.trim().split(/\s+/);
-  const pcsSlug = parts.map(p => p.toLowerCase()).join('-');
-  const pcsProfile = `https://www.procyclingstats.com/rider/${pcsSlug}`;
+// Get the surname from a poule name (all leading UPPERCASE words)
+// "VAN DER POEL Mathieu" → "van der poel"
+// "VINGEGAARD RASMUSSEN Jonas" → "vingegaard rasmussen"
+function getSurname(pouleName) {
+  const parts = pouleName.trim().split(/\s+/);
+  const sn = [];
+  for (const p of parts) {
+    if (/^[A-Z]/.test(p) && p === p.toUpperCase()) sn.push(p);
+    else break;
+  }
+  return norm(sn.join(" "));
+}
 
-  openModal(`Nieuws: ${riderName}`, `
-    <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
-      Klik op een link om het laatste nieuws te bekijken. Opent in een nieuw tabblad.
-    </p>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <a href="${googleNews}" target="_blank" rel="noopener"
-         style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);
-                padding:14px 18px;border-radius:4px;text-decoration:none;transition:border-color 0.2s;"
-         onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-        <span style="font-size:22px">📰</span>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">Google News</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Laatste nieuwsberichten over ${riderName}</div>
-        </div>
-        <span style="margin-left:auto;color:var(--accent);font-size:18px">↗</span>
-      </a>
-      <a href="${wielerflits}" target="_blank" rel="noopener"
-         style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);
-                padding:14px 18px;border-radius:4px;text-decoration:none;transition:border-color 0.2s;"
-         onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-        <span style="font-size:22px">🚴</span>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">Wielerflits</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Nederlandstalig wielrennen nieuws</div>
-        </div>
-        <span style="margin-left:auto;color:var(--accent);font-size:18px">↗</span>
-      </a>
-      <a href="${pcsProfile}" target="_blank" rel="noopener"
-         style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);
-                padding:14px 18px;border-radius:4px;text-decoration:none;transition:border-color 0.2s;"
-         onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-        <span style="font-size:22px">📊</span>
-        <div>
-          <div style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">ProcyclingStats</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Statistieken & rennersprofiel</div>
-        </div>
-        <span style="margin-left:auto;color:var(--accent);font-size:18px">↗</span>
-      </a>
-    </div>
-  `);
-};
+// Check if a PCS slug matches a poule rider name
+// pcsSlug: "mathieu-van-der-poel" → words: ["mathieu","van","der","poel"]
+// surname of "VAN DER POEL Mathieu" → ["van","der","poel"]
+// All surname words must appear in slug words
+function matchSlug(pcsSlug, pouleName) {
+  const slugWords = pcsSlug.split("-");
+  const sn = getSurname(pouleName);
+  if (!sn || sn.length < 2) return false;
+  const snWords = sn.split(" ").filter(w => w.length >= 2);
+  return snWords.every(w => slugWords.includes(w));
+}
 
-// ═══════════════════════════════════
-// STARTERS CHECK
-// ═══════════════════════════════════
-const PCS_SLUGS = {
-  'Omloop het Nieuwsblad': 'omloop-het-nieuwsblad',
-  'Strade Bianche': 'strade-bianche',
-  'Parijs-Nice': 'paris-nice',
-  'Parijs - Nice': 'paris-nice',
-  'Tirreno Adriatico': 'tirreno-adriatico',
-  'Milaan - San Remo': 'milano-sanremo',
-  'E3 Prijs': 'e3-saxo-bank-classic',
-  'Gent - Wevelgem': 'gent-wevelgem',
-  'Ronde van Catalonië': 'volta-a-catalunya',
-  'Dwars door Vlaanderen': 'dwars-door-vlaanderen',
-  'Ronde van Vlaanderen': 'ronde-van-vlaanderen',
-  'Scheldeprijs': 'scheldeprijs',
-  'Ronde van het Baskenland': 'itzulia-basque-country',
-  'Parijs - Roubaix': 'paris-roubaix',
-  'Amstel Gold Race': 'amstel-gold-race',
-  'Waalse Pijl': 'la-fleche-wallonne',
-  'Luik - Bastenaken - Luik': 'liege-bastogne-liege',
-  'Ronde van Romandië': 'tour-de-romandie',
-  "Giro d'Italia": 'giro-d-italia',
-  'Critérium du Dauphiné': 'criterium-du-dauphine',
-  'Ronde van Zwitserland': 'tour-de-suisse',
-  'NK Wielrennen': 'netherlands-championships-rr',
-  'Tour de France': 'tour-de-france',
-  'Clasica San Sebastian': 'clasica-ciclista-san-sebastian',
-  'Renewi Tour (Benelux)': 'renewi-tour',
-  'La Vuelta Ciclista a España': 'vuelta-a-espana',
-  'GP Québec': 'gp-de-quebec',
-  'GP Montréal': 'gp-de-montreal',
-  'WK (tijdrit)': 'uci-road-world-championships',
-};
-
-window.checkRaceStarters = function(raceId, raceName) {
-  const slug = PCS_SLUGS[raceName];
+window.checkS = async function(raceId, raceName) {
+  const slug = PCS[raceName] || raceName.toLowerCase().replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,"");
   const year = new Date().getFullYear();
-  const pcsUrl = `https://www.procyclingstats.com/race/${slug || raceName.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}/${year}/startlist`;
+  const pcsUrl = "https://www.procyclingstats.com/race/"+slug+"/"+year+"/startlist";
 
-  // Build checklist grouped by team
-  const teamColors = { 1: '#1a6e3c', 2: '#1a3d6e', 3: '#6e1a1a' };
-  let checklistHtml = '';
-  [1,2,3].forEach(t => {
-    const riders = state.teams[t] || [];
-    if (!riders.length) return;
-    checklistHtml += `
-      <div style="margin-bottom:16px">
-        <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:16px;
-                    color:#fff;background:${teamColors[t]};padding:6px 12px;border-radius:3px;
-                    margin-bottom:6px;display:inline-block;">Team ${t}</div>
-        ${riders.map(r => {
-          const id = 'chk_' + r.replace(/[^a-zA-Z0-9]/g,'_');
-          return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);">
-            <input type="checkbox" id="${id}" 
-                   style="accent-color:${teamColors[t]};width:16px;height:16px;flex-shrink:0;cursor:pointer;"
-                   onchange="updateStarterCount()">
-            <label for="${id}" style="font-size:13px;cursor:pointer;font-weight:500">${r}</label>
-          </div>`;
-        }).join('')}
-      </div>`;
-  });
+  openModal("&#128690; Starters: "+raceName, '<div class="loading"><div class="spin"></div>Startlijst ophalen van ProcyclingStats...</div>');
 
-  openModal(`🚴 Starters: ${raceName}`, `
-    <div style="margin-bottom:20px;padding:14px 16px;background:var(--surface2);border-radius:4px;border-left:3px solid var(--accent);">
-      <p style="font-size:13px;line-height:1.6;margin-bottom:10px">
-        Open de startlijst op ProcyclingStats, kijk welke van jouw renners er staan 
-        en vink ze hieronder aan. De teller houdt bij hoeveel je hebt aangevinkt.
-      </p>
-      <a href="${pcsUrl}" target="_blank" rel="noopener"
-         style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;
-                padding:9px 18px;font-family:'Barlow Condensed',sans-serif;font-weight:700;
-                letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none;">
-        ↗ Open startlijst op ProcyclingStats
-      </a>
-    </div>
+  let slugs = [];
+  let ok = false;
 
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-      <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
-                   text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>
-      <span id="starter-count" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent)">0 starters</span>
-    </div>
+  const proxies = [
+    "https://corsproxy.io/?"+encodeURIComponent(pcsUrl),
+    "https://api.allorigins.win/get?url="+encodeURIComponent(pcsUrl)
+  ];
 
-    ${checklistHtml}
-  `);
-};
+  for (const proxy of proxies) {
+    try {
+      const resp = await fetch(proxy, {signal:AbortSignal.timeout(10000)});
+      if (!resp.ok) continue;
+      let html = "";
+      if (proxy.includes("allorigins")) {
+        const j = await resp.json();
+        html = j.contents || "";
+      } else {
+        html = await resp.text();
+      }
+      if (html.length < 3000) continue;
+      const found = [...html.matchAll(/href=["'][^"']*\/rider\/([a-z][a-z0-9\-]+)["']/g)];
+      slugs = [...new Set(found.map(m => m[1]))];
+      if (slugs.length > 10) { ok = true; break; }
+    } catch(e) { /* next */ }
+  }
 
-window.updateStarterCount = function() {
-  const checked = document.querySelectorAll('#modal input[type=checkbox]:checked').length;
-  const el = document.getElementById('starter-count');
-  if (el) el.textContent = checked + (checked === 1 ? ' starter' : ' starters');
-};
-
-
-// ═══════════════════════════════════
-// NEWS FEED — Google News RSS
-// ═══════════════════════════════════
-
-// Google News RSS via CORS proxy
-// Format: https://news.google.com/rss/search?q=QUERY&hl=nl&gl=NL&ceid=NL:nl
-const NEWS_CACHE = {};
-let newsLoaded = false;
-
-async function fetchRiderRSS(riderName) {
-  if (NEWS_CACHE[riderName]) return NEWS_CACHE[riderName];
-
-  const query = encodeURIComponent('"' + riderName.split(' ').slice(0,2).join(' ') + '" wielrenner');
-  const rssUrl = `https://news.google.com/rss/search?q=${query}&hl=nl&gl=NL&ceid=NL:nl`;
-  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
-
-  try {
-    const resp = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-    if (!resp.ok) throw new Error('proxy failed');
-    const json = await resp.json();
-    const xml = json.contents || '';
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(xml, 'text/xml');
-    const items = [...doc.querySelectorAll('item')].slice(0, 4);
-
-    const articles = items.map(item => {
-      const title = item.querySelector('title')?.textContent || '';
-      const link = item.querySelector('link')?.textContent || '';
-      const pubDate = item.querySelector('pubDate')?.textContent || '';
-      const source = item.querySelector('source')?.textContent || '';
-      // Format date
-      let dateStr = '';
-      try {
-        const d = new Date(pubDate);
-        dateStr = d.toLocaleDateString('nl-NL', { day:'numeric', month:'short', year:'numeric' });
-      } catch(e) {}
-      // Clean title (Google News adds source at end after " - ")
-      const cleanTitle = title.replace(/ - [^-]+$/, '').trim();
-      return { title: cleanTitle, link, date: dateStr, source };
+  if (ok) {
+    const starters = [];
+    const rest = [];
+    allR().forEach(function(item) {
+      if (slugs.some(s => matchSlug(s, item.name))) starters.push(item);
+      else rest.push(item.name);
     });
 
-    NEWS_CACHE[riderName] = articles;
+    let html = '<div style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:4px;display:flex;justify-content:space-between;align-items:center">'
+      +'<span style="font-size:12px;color:var(--muted)">ProcyclingStats &mdash; '+slugs.length+' renners gevonden</span>'
+      +'<a href="'+pcsUrl+'" target="_blank" style="color:var(--accent);font-size:12px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">&#8599; Volledige startlijst</a></div>';
+
+    if (starters.length === 0) {
+      html += '<div class="empty">Geen van jouw renners staan op de startlijst.</div>';
+    } else {
+      html += '<p style="font-size:13px;color:var(--muted);margin-bottom:12px"><strong style="color:var(--accent);font-size:18px">'+starters.length+'</strong> van jouw renners starten in '+raceName+':</p>';
+      html += '<div class="slist">';
+      starters.forEach(function(s) {
+        html += '<span class="chip t'+s.team+'">'+s.name+' <span style="opacity:.5;font-size:10px;margin-left:4px">T'+s.team+'</span></span>';
+      });
+      html += '</div>';
+    }
+    if (rest.length > 0) {
+      html += '<details style="margin-top:16px"><summary style="font-size:12px;color:var(--muted);cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">Niet op startlijst ('+rest.length+')</summary>'
+        +'<p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.8">'+rest.join(" &middot; ")+'</p></details>';
+    }
+    document.getElementById("modal-body").innerHTML = html;
+
+  } else {
+    // Fallback: manual checklist
+    const tc = {1:"var(--t1)",2:"var(--t2)",3:"var(--t3)"};
+    let cl = "";
+    [1,2,3].forEach(function(t) {
+      const riders = getTeam(t);
+      cl += '<div style="margin-bottom:16px"><div style="font-family:\'Bebas Neue\',sans-serif;letter-spacing:2px;font-size:15px;color:#fff;background:'+tc[t]+';padding:5px 12px;border-radius:3px;margin-bottom:6px;display:inline-block">Team '+t+'</div>';
+      riders.forEach(function(r) {
+        const id = "c_"+r.replace(/[^a-zA-Z0-9]/g,"_");
+        cl += '<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)"><input type="checkbox" id="'+id+'" style="accent-color:'+tc[t]+';width:15px;height:15px;cursor:pointer" onchange="cntS()"><label for="'+id+'" style="font-size:13px;cursor:pointer;font-weight:500">'+r+'</label></div>';
+      });
+      cl += "</div>";
+    });
+    document.getElementById("modal-body").innerHTML =
+      '<div style="margin-bottom:16px;padding:12px 14px;background:rgba(196,52,26,.1);border:1px solid var(--accent2);border-radius:4px">'
+      +'<p style="font-size:13px;color:var(--muted);margin-bottom:10px">Automatisch ophalen mislukt. Open de startlijst en vink handmatig aan:</p>'
+      +'<a href="'+pcsUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;padding:8px 16px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none">&#8599; Open ProcyclingStats</a></div>'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+      +'<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>'
+      +'<span id="cnt" style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:var(--accent)">0 starters</span></div>'+cl;
+  }
+};
+
+window.cntS = function() {
+  const n = document.querySelectorAll("#modal input:checked").length;
+  const el = document.getElementById("cnt");
+  if (el) el.textContent = n+(n===1?" starter":" starters");
+};
+
+async function fetchRSS(name) {
+  if (ncache[name] !== undefined) return ncache[name];
+  const parts = name.trim().split(/\s+/);
+  const q = encodeURIComponent('"'+parts.slice(0,2).join(" ")+'" wielrenner when:14d');
+  const proxy = "https://api.allorigins.win/get?url="+encodeURIComponent("https://news.google.com/rss/search?q="+q+"&hl=nl&gl=NL&ceid=NL:nl");
+  try {
+    const resp = await fetch(proxy, {signal:AbortSignal.timeout(8000)});
+    if (!resp.ok) throw new Error("fail");
+    const j = await resp.json();
+    const doc = new DOMParser().parseFromString(j.contents||"","text/xml");
+    const articles = [...doc.querySelectorAll("item")].slice(0,4).map(item => {
+      const title = (item.querySelector("title")?.textContent||"").replace(/ - [^-]+$/,"").trim();
+      const link = item.querySelector("link")?.textContent||"";
+      const src = item.querySelector("source")?.textContent||"";
+      let date = "";
+      try { date = new Date(item.querySelector("pubDate")?.textContent||"").toLocaleDateString("nl-NL",{day:"numeric",month:"short"}); } catch(e){}
+      return {title, link, date, src};
+    });
+    ncache[name] = articles;
     return articles;
   } catch(e) {
-    return null; // null = error
+    ncache[name] = null;
+    return null;
   }
 }
 
-function getRiderTeam(name) {
-  for (const t of [1,2,3]) {
-    if ((state.teams[t]||[]).includes(name)) return t;
-  }
-  return 1;
+function newsCard(name, articles, team) {
+  const parts = name.split(/\s+/);
+  const dn = parts.length > 1 ? parts.slice(1).join(" ")+" "+parts[0] : name;
+  let body = "";
+  if (articles === null) body = '<div class="nempty">&#9888; Kon nieuws niet laden</div>';
+  else if (!articles.length) body = '<div class="nempty">Geen nieuws gevonden in de afgelopen 2 weken</div>';
+  else body = articles.map(a => '<div class="nart"><a href="'+a.link+'" target="_blank" rel="noopener">'+a.title+'</a><span class="nmet">'+a.date+(a.src?" &middot; "+a.src:"")+'</span></div>').join("");
+  return '<div class="ncard" data-team="'+team+'" id="nc_'+name.replace(/[^a-zA-Z]/g,"_")+'"><div class="nhead t'+team+'"><span class="nrider">'+dn+'</span><span class="nteam">TEAM '+team+'</span></div><div>'+body+'</div></div>';
 }
 
-function buildNewsCard(riderName, articles, team) {
-  const headerClass = `t${team}`;
-  let bodyHtml = '';
-
-  if (articles === null) {
-    bodyHtml = `<div class="news-card-error">⚠ Kon nieuws niet laden</div>`;
-  } else if (articles.length === 0) {
-    bodyHtml = `<div class="news-card-empty">Geen recent nieuws gevonden</div>`;
-  } else {
-    bodyHtml = articles.map(a => `
-      <div class="news-article">
-        <a href="${a.link}" target="_blank" rel="noopener">${a.title || 'Geen titel'}</a>
-        <span class="news-article-meta">${a.date}${a.source ? ' · ' + a.source : ''}</span>
-      </div>`).join('');
-  }
-
-  const teamParts = riderName.split(' ');
-  // Display: show first name first (PCS format is LASTNAME Firstname)
-  const displayName = teamParts.length > 1
-    ? teamParts.slice(1).join(' ') + ' ' + teamParts[0]
-    : riderName;
-
-  return `<div class="news-card" data-team="${team}" data-rider="${riderName}">
-    <div class="news-card-header ${headerClass}">
-      <span class="news-card-rider">${displayName}</span>
-      <span class="news-card-team">TEAM ${team}</span>
-    </div>
-    <div class="news-card-body">${bodyHtml}</div>
-  </div>`;
-}
-
-window.loadAllNews = async function() {
-  const feed = document.getElementById('news-feed');
-  const status = document.getElementById('news-status');
-  const btn = document.getElementById('news-reload-btn');
-
-  // Gather all riders
-  const allRiders = [];
-  [1,2,3].forEach(t => (state.teams[t]||[]).forEach(n => allRiders.push({name:n, team:t})));
-
-  if (allRiders.length === 0) {
-    feed.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Geen renners gevonden. Voeg eerst renners toe via Beheer.</div>';
-    return;
-  }
+window.loadNews = async function() {
+  const grid = document.getElementById("news-grid");
+  const status = document.getElementById("news-status");
+  const btn = document.getElementById("news-btn");
+  const riders = allR();
+  if (!riders.length) { grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Geen renners gevonden.</div>'; return; }
 
   btn.disabled = true;
-  btn.textContent = '⏳ Bezig...';
-  status.style.display = 'block';
-  feed.innerHTML = '';
+  btn.textContent = "Laden...";
+  status.style.display = "block";
+  status.textContent = "Bezig met laden...";
+  grid.innerHTML = "";
 
-  // Build skeleton cards first
-  allRiders.forEach(({name, team}) => {
-    const teamParts = name.split(' ');
-    const displayName = teamParts.length > 1 ? teamParts.slice(1).join(' ') + ' ' + teamParts[0] : name;
-    feed.innerHTML += `<div class="news-card" data-team="${team}" data-rider="${name}" id="card_${name.replace(/[^a-zA-Z]/g,'_')}">
-      <div class="news-card-header t${team}">
-        <span class="news-card-rider">${displayName}</span>
-        <span class="news-card-team">TEAM ${team}</span>
-      </div>
-      <div class="news-card-body">
-        <div class="news-card-loading"><div class="spinner"></div> Laden...</div>
-      </div>
-    </div>`;
+  riders.forEach(function(item) {
+    const parts = item.name.split(/\s+/);
+    const dn = parts.length > 1 ? parts.slice(1).join(" ")+" "+parts[0] : item.name;
+    grid.innerHTML += '<div class="ncard" data-team="'+item.team+'" id="nc_'+item.name.replace(/[^a-zA-Z]/g,"_")+'"><div class="nhead t'+item.team+'"><span class="nrider">'+dn+'</span><span class="nteam">TEAM '+item.team+'</span></div><div class="nload"><div class="spin"></div>Laden...</div></div>';
   });
 
-  // Fetch in batches of 4 to avoid rate limiting
-  const BATCH = 4;
   let done = 0;
-  for (let i = 0; i < allRiders.length; i += BATCH) {
-    const batch = allRiders.slice(i, i + BATCH);
-    await Promise.all(batch.map(async ({name, team}) => {
-      const articles = await fetchRiderRSS(name);
+  for (let i = 0; i < riders.length; i += 4) {
+    await Promise.all(riders.slice(i, i+4).map(async function(item) {
+      const articles = await fetchRSS(item.name);
       done++;
-      status.textContent = `Laden... ${done}/${allRiders.length} renners (${name})`;
-      // Update this rider's card
-      const card = document.getElementById('card_' + name.replace(/[^a-zA-Z]/g,'_'));
-      if (card) {
-        card.outerHTML = buildNewsCard(name, articles, team);
-      }
+      status.textContent = "Laden... "+done+"/"+riders.length+" ("+item.name+")";
+      const card = document.getElementById("nc_"+item.name.replace(/[^a-zA-Z]/g,"_"));
+      if (card) card.outerHTML = newsCard(item.name, articles, item.team);
     }));
-    // Small delay between batches
-    if (i + BATCH < allRiders.length) await new Promise(r => setTimeout(r, 300));
+    if (i+4 < riders.length) await new Promise(r => setTimeout(r,300));
   }
 
-  status.style.display = 'none';
+  status.style.display = "none";
   btn.disabled = false;
-  btn.textContent = '🔄 Vernieuwen';
-  newsLoaded = true;
+  btn.textContent = "&#128260; Vernieuwen (laatste 2 weken)";
   filterNews();
 };
 
 window.filterNews = function() {
-  const filter = document.getElementById('news-team-filter')?.value || 'all';
-  document.querySelectorAll('#news-feed .news-card').forEach(card => {
-    const team = card.dataset.team;
-    card.classList.toggle('news-hidden', filter !== 'all' && team !== filter);
+  const f = document.getElementById("nf")?.value || "0";
+  document.querySelectorAll("#news-grid .ncard").forEach(function(c) {
+    c.classList.toggle("nhide", f !== "0" && c.dataset.team !== f);
   });
 };
 
-// ═══════════════════════════════════
-// START
-// ═══════════════════════════════════
-initFirebase();
+initDB();
 </script>
 </body>
 </html>
