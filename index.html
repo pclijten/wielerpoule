@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Directeur Sportief 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -232,7 +232,13 @@ main{position:relative;z-index:1;padding:32px;max-width:1400px;margin:0 auto}
   <div class="sec">Wedstrijden beheren</div>
   <div class="arf">
     <input id="nr-race" placeholder="Naam wedstrijd...">
-    <select id="nr-type"><option value="Eendaagse">Eendaagse</option><option value="Monument">Monument</option><option value="Rittenkoers">Rittenkoers</option><option value="Grote Ronde">Grote Ronde</option><option value="Divers">Divers</option></select>
+    <select id="nr-type">
+      <option value="Eendaagse">Eendaagse</option>
+      <option value="Monument">Monument</option>
+      <option value="Rittenkoers">Rittenkoers</option>
+      <option value="Grote Ronde">Grote Ronde</option>
+      <option value="Divers">Divers</option>
+    </select>
     <input id="nr-date" placeholder="Datum">
     <button class="bp" onclick="addRace()">+ Toevoegen</button>
   </div>
@@ -611,44 +617,77 @@ window.riderNews = function(name) {
     +'</div>');
 };
 
-// Normalize string: lowercase, no accents, only a-z and spaces
+/* ============================================================
+   STARTLIJST MATCHING — NIEUWE LOGICA (alleen jouw starters)
+   ============================================================ */
+
+// Normalize: lowercase, no accents, keep letters/spaces only
 function norm(s) {
-  return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z\s]/g," ").replace(/\s+/g," ").trim();
+  return (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-// Get the surname from a poule name (all leading UPPERCASE words)
-// "VAN DER POEL Mathieu" → "van der poel"
-// "VINGEGAARD RASMUSSEN Jonas" → "vingegaard rasmussen"
-function getSurname(pouleName) {
-  const parts = pouleName.trim().split(/\s+/);
+// "VAN DER POEL Mathieu" -> { given: "mathieu", surname: "van der poel" }
+function splitPouleName(pouleName) {
+  const parts = (pouleName || "").trim().split(/\s+/);
   const sn = [];
-  for (const p of parts) {
-    if (/^[A-Z]/.test(p) && p === p.toUpperCase()) sn.push(p);
+  let i = 0;
+  for (; i < parts.length; i++) {
+    const p = parts[i];
+    if (p === p.toUpperCase() && /[A-Z]/.test(p)) sn.push(p);
     else break;
   }
-  return norm(sn.join(" "));
+  const given = parts.slice(i).join(" ");
+  const surname = sn.join(" ");
+  return { given: norm(given), surname: norm(surname) };
 }
 
-// Check if a PCS slug matches a poule rider name
-// pcsSlug: "mathieu-van-der-poel" → words: ["mathieu","van","der","poel"]
-// surname of "VAN DER POEL Mathieu" → ["van","der","poel"]
-// All surname words must appear in slug words
-function matchSlug(pcsSlug, pouleName) {
-  const slugWords = pcsSlug.split("-");
-  const sn = getSurname(pouleName);
-  if (!sn || sn.length < 2) return false;
-  const snWords = sn.split(" ").filter(w => w.length >= 2);
-  return snWords.every(w => slugWords.includes(w));
+// "Mathieu van der Poel" -> { given: "mathieu", surname: "van der poel" }
+function splitPCSName(pcsName) {
+  const parts = norm(pcsName).split(" ").filter(Boolean);
+  if (parts.length < 2) return { given: "", surname: "" };
+  const given = parts[0];
+  const surname = parts.slice(1).join(" ");
+  return { given, surname };
+}
+
+// Match poule-naam met PCS-naam op achternaam + (voornaam exact of initiaal)
+function matchByName(pouleName, pcsName) {
+  const p = splitPouleName(pouleName);
+  const c = splitPCSName(pcsName);
+  if (!p.surname || !c.surname) return false;
+  if (p.surname !== c.surname) return false;
+
+  if (!p.given || !c.given) return true;
+  if (p.given === c.given) return true;
+  return p.given[0] === c.given[0];
+}
+
+// Parse PCS startlist HTML -> unieke lijst "Given Surname"
+function extractPCSStartlistNames(html) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const anchors = [...doc.querySelectorAll('a[href*="/rider/"]')];
+
+  const names = anchors
+    .map(a => (a.textContent || "").trim())
+    .filter(t => t && t.split(/\s+/).length >= 2);
+
+  return [...new Set(names)];
 }
 
 window.checkS = async function(raceId, raceName) {
   const slug = PCS[raceName] || raceName.toLowerCase().replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,"");
-  const year = new Date().getFullYear();
+  const year = 2026; // vaste kalenderjaar (ipv new Date().getFullYear())
   const pcsUrl = "https://www.procyclingstats.com/race/"+slug+"/"+year+"/startlist";
 
   openModal("&#128690; Starters: "+raceName, '<div class="loading"><div class="spin"></div>Startlijst ophalen van ProcyclingStats...</div>');
 
-  let slugs = [];
+  let rawHtml = "";
   let ok = false;
 
   const proxies = [
@@ -660,50 +699,57 @@ window.checkS = async function(raceId, raceName) {
     try {
       const resp = await fetch(proxy, {signal:AbortSignal.timeout(10000)});
       if (!resp.ok) continue;
-      let html = "";
+
       if (proxy.includes("allorigins")) {
         const j = await resp.json();
-        html = j.contents || "";
+        rawHtml = j.contents || "";
       } else {
-        html = await resp.text();
+        rawHtml = await resp.text();
       }
-      if (html.length < 3000) continue;
-      const found = [...html.matchAll(/href=["'][^"']*\/rider\/([a-z][a-z0-9\-]+)["']/g)];
-      slugs = [...new Set(found.map(m => m[1]))];
-      if (slugs.length > 10) { ok = true; break; }
+
+      if (rawHtml.length < 3000) continue;
+
+      // snelle sanity-check: zitten er rider-links in?
+      if (rawHtml.includes("/rider/")) { ok = true; break; }
     } catch(e) { /* next */ }
   }
 
   if (ok) {
-    const starters = [];
-    const rest = [];
-    allR().forEach(function(item) {
-      if (slugs.some(s => matchSlug(s, item.name))) starters.push(item);
-      else rest.push(item.name);
-    });
+    const pcsNames = extractPCSStartlistNames(rawHtml);
 
-    let html = '<div style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:4px;display:flex;justify-content:space-between;align-items:center">'
-      +'<span style="font-size:12px;color:var(--muted)">ProcyclingStats &mdash; '+slugs.length+' renners gevonden</span>'
-      +'<a href="'+pcsUrl+'" target="_blank" style="color:var(--accent);font-size:12px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">&#8599; Volledige startlijst</a></div>';
+    const starters = allR().filter(item =>
+      pcsNames.some(pn => matchByName(item.name, pn))
+    );
+
+    let out = '<div style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:4px;display:flex;justify-content:space-between;align-items:center">'
+      + '<span style="font-size:12px;color:var(--muted)">ProcyclingStats &mdash; startlijst ingelezen</span>'
+      + '<a href="'+pcsUrl+'" target="_blank" style="color:var(--accent);font-size:12px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">&#8599; Volledige startlijst</a>'
+      + '</div>';
 
     if (starters.length === 0) {
-      html += '<div class="empty">Geen van jouw renners staan op de startlijst.</div>';
+      out += '<div class="empty">Geen van jouw renners staan op de startlijst.</div>';
     } else {
-      html += '<p style="font-size:13px;color:var(--muted);margin-bottom:12px"><strong style="color:var(--accent);font-size:18px">'+starters.length+'</strong> van jouw renners starten in '+raceName+':</p>';
-      html += '<div class="slist">';
-      starters.forEach(function(s) {
-        html += '<span class="chip t'+s.team+'">'+s.name+' <span style="opacity:.5;font-size:10px;margin-left:4px">T'+s.team+'</span></span>';
+      out += '<p style="font-size:13px;color:var(--muted);margin-bottom:12px">'
+        + '<strong style="color:var(--accent);font-size:18px">'+starters.length+'</strong>'
+        + ' van jouw renners starten in '+raceName+':</p>';
+
+      // sorteer op team
+      const byTeam = {1:[],2:[],3:[]};
+      starters.forEach(s => byTeam[s.team].push(s));
+
+      out += '<div class="slist">';
+      [1,2,3].forEach(t => {
+        byTeam[t].forEach(s => {
+          out += '<span class="chip t'+s.team+'">'+s.name+' <span style="opacity:.5;font-size:10px;margin-left:4px">T'+s.team+'</span></span>';
+        });
       });
-      html += '</div>';
+      out += '</div>';
     }
-    if (rest.length > 0) {
-      html += '<details style="margin-top:16px"><summary style="font-size:12px;color:var(--muted);cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">Niet op startlijst ('+rest.length+')</summary>'
-        +'<p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.8">'+rest.join(" &middot; ")+'</p></details>';
-    }
-    document.getElementById("modal-body").innerHTML = html;
+
+    document.getElementById("modal-body").innerHTML = out;
 
   } else {
-    // Fallback: manual checklist
+    // Fallback: manual checklist (jouw originele gedrag)
     const tc = {1:"var(--t1)",2:"var(--t2)",3:"var(--t3)"};
     let cl = "";
     [1,2,3].forEach(function(t) {
