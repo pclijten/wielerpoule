@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Directeur Sportief 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;500;600&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -232,13 +232,7 @@ main{position:relative;z-index:1;padding:32px;max-width:1400px;margin:0 auto}
   <div class="sec">Wedstrijden beheren</div>
   <div class="arf">
     <input id="nr-race" placeholder="Naam wedstrijd...">
-    <select id="nr-type">
-      <option value="Eendaagse">Eendaagse</option>
-      <option value="Monument">Monument</option>
-      <option value="Rittenkoers">Rittenkoers</option>
-      <option value="Grote Ronde">Grote Ronde</option>
-      <option value="Divers">Divers</option>
-    </select>
+    <select id="nr-type"><option value="Eendaagse">Eendaagse</option><option value="Monument">Monument</option><option value="Rittenkoers">Rittenkoers</option><option value="Grote Ronde">Grote Ronde</option><option value="Divers">Divers</option></select>
     <input id="nr-date" placeholder="Datum">
     <button class="bp" onclick="addRace()">+ Toevoegen</button>
   </div>
@@ -602,26 +596,10 @@ function openModal(title, body) {
 window.closeModal = function() { document.getElementById("modal").style.display = "none"; };
 window.overlayClose = function(e) { if (e.target===document.getElementById("modal")) closeModal(); };
 
-window.riderNews = function(name) {
-  const q = encodeURIComponent(name+" wielrenner 2026");
-  const slug = name.toLowerCase().replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,"");
-  openModal("Nieuws: "+name,
-    '<p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">Klik op een link om het laatste nieuws te bekijken. Opent in een nieuw tabblad.</p>'
-    +'<div style="display:flex;flex-direction:column;gap:10px">'
-    +'<a href="https://news.google.com/search?q='+q+'&hl=nl&gl=NL&ceid=NL:nl" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);padding:14px 18px;border-radius:4px;text-decoration:none" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
-    +'<span style="font-size:22px">&#128240;</span><div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">Google News</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Laatste nieuws over '+name+'</div></div><span style="margin-left:auto;color:var(--accent)">&#8599;</span></a>'
-    +'<a href="https://www.wielerflits.nl/?s='+encodeURIComponent(name)+'" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);padding:14px 18px;border-radius:4px;text-decoration:none" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
-    +'<span style="font-size:22px">&#128690;</span><div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">Wielerflits</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Nederlandstalig wielrennen nieuws</div></div><span style="margin-left:auto;color:var(--accent)">&#8599;</span></a>'
-    +'<a href="https://www.procyclingstats.com/rider/'+slug+'" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);padding:14px 18px;border-radius:4px;text-decoration:none" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
-    +'<span style="font-size:22px">&#128202;</span><div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">ProcyclingStats</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Statistieken & profiel</div></div><span style="margin-left:auto;color:var(--accent)">&#8599;</span></a>'
-    +'</div>');
-};
+// ============================================================
+// STARTLIST — NAME MATCHING (robust) + PROXIES (incl. r.jina.ai)
+// ============================================================
 
-/* ============================================================
-   STARTLIJST MATCHING — NIEUWE LOGICA (alleen jouw starters)
-   ============================================================ */
-
-// Normalize: lowercase, no accents, keep letters/spaces only
 function norm(s) {
   return (s || "")
     .toLowerCase()
@@ -632,7 +610,6 @@ function norm(s) {
     .trim();
 }
 
-// "VAN DER POEL Mathieu" -> { given: "mathieu", surname: "van der poel" }
 function splitPouleName(pouleName) {
   const parts = (pouleName || "").trim().split(/\s+/);
   const sn = [];
@@ -647,16 +624,12 @@ function splitPouleName(pouleName) {
   return { given: norm(given), surname: norm(surname) };
 }
 
-// "Mathieu van der Poel" -> { given: "mathieu", surname: "van der poel" }
 function splitPCSName(pcsName) {
   const parts = norm(pcsName).split(" ").filter(Boolean);
   if (parts.length < 2) return { given: "", surname: "" };
-  const given = parts[0];
-  const surname = parts.slice(1).join(" ");
-  return { given, surname };
+  return { given: parts[0], surname: parts.slice(1).join(" ") };
 }
 
-// Match poule-naam met PCS-naam op achternaam + (voornaam exact of initiaal)
 function matchByName(pouleName, pcsName) {
   const p = splitPouleName(pouleName);
   const c = splitPCSName(pcsName);
@@ -665,40 +638,40 @@ function matchByName(pouleName, pcsName) {
 
   if (!p.given || !c.given) return true;
   if (p.given === c.given) return true;
-  return p.given[0] === c.given[0];
+  return p.given[0] === c.given[0]; // initiaal
 }
 
-// Parse PCS startlist HTML -> unieke lijst "Given Surname"
 function extractPCSStartlistNames(html) {
   const doc = new DOMParser().parseFromString(html, "text/html");
   const anchors = [...doc.querySelectorAll('a[href*="/rider/"]')];
-
   const names = anchors
     .map(a => (a.textContent || "").trim())
     .filter(t => t && t.split(/\s+/).length >= 2);
-
   return [...new Set(names)];
 }
 
 window.checkS = async function(raceId, raceName) {
   const slug = PCS[raceName] || raceName.toLowerCase().replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,"");
-  const year = 2026; // vaste kalenderjaar (ipv new Date().getFullYear())
+  const year = 2026;
   const pcsUrl = "https://www.procyclingstats.com/race/"+slug+"/"+year+"/startlist";
 
-  openModal("&#128690; Starters: "+raceName, '<div class="loading"><div class="spin"></div>Startlijst ophalen van ProcyclingStats...</div>');
+  openModal("🚴 Starters: "+raceName, '<div class="loading"><div class="spin"></div>Startlijst ophalen van ProcyclingStats...</div>');
 
   let rawHtml = "";
   let ok = false;
+  let lastErr = "";
 
   const proxies = [
+    "https://r.jina.ai/http://"+pcsUrl.replace(/^https?:\/\//,""),
+    "https://r.jina.ai/https://"+pcsUrl.replace(/^https?:\/\//,""),
     "https://corsproxy.io/?"+encodeURIComponent(pcsUrl),
     "https://api.allorigins.win/get?url="+encodeURIComponent(pcsUrl)
   ];
 
   for (const proxy of proxies) {
     try {
-      const resp = await fetch(proxy, {signal:AbortSignal.timeout(10000)});
-      if (!resp.ok) continue;
+      const resp = await fetch(proxy, { signal: AbortSignal.timeout(12000) });
+      if (!resp.ok) { lastErr = "HTTP "+resp.status+" via proxy"; continue; }
 
       if (proxy.includes("allorigins")) {
         const j = await resp.json();
@@ -707,23 +680,22 @@ window.checkS = async function(raceId, raceName) {
         rawHtml = await resp.text();
       }
 
-      if (rawHtml.length < 3000) continue;
-
-      // snelle sanity-check: zitten er rider-links in?
-      if (rawHtml.includes("/rider/")) { ok = true; break; }
-    } catch(e) { /* next */ }
+      const pcsNames = extractPCSStartlistNames(rawHtml);
+      if (pcsNames.length > 20) { ok = true; break; }
+      lastErr = "Te weinig namen ("+pcsNames.length+")";
+    } catch (e) {
+      lastErr = String(e);
+    }
   }
 
   if (ok) {
     const pcsNames = extractPCSStartlistNames(rawHtml);
+    const starters = allR().filter(item => pcsNames.some(pn => matchByName(item.name, pn)));
 
-    const starters = allR().filter(item =>
-      pcsNames.some(pn => matchByName(item.name, pn))
-    );
-
-    let out = '<div style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:4px;display:flex;justify-content:space-between;align-items:center">'
-      + '<span style="font-size:12px;color:var(--muted)">ProcyclingStats &mdash; startlijst ingelezen</span>'
-      + '<a href="'+pcsUrl+'" target="_blank" style="color:var(--accent);font-size:12px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">&#8599; Volledige startlijst</a>'
+    let out =
+      '<div style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:4px;display:flex;justify-content:space-between;align-items:center">'
+      + '<span style="font-size:12px;color:var(--muted)">ProcyclingStats — startlijst ingelezen ('+pcsNames.length+' namen)</span>'
+      + '<a href="'+pcsUrl+'" target="_blank" style="color:var(--accent);font-size:12px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">↗ Volledige startlijst</a>'
       + '</div>';
 
     if (starters.length === 0) {
@@ -733,7 +705,6 @@ window.checkS = async function(raceId, raceName) {
         + '<strong style="color:var(--accent);font-size:18px">'+starters.length+'</strong>'
         + ' van jouw renners starten in '+raceName+':</p>';
 
-      // sorteer op team
       const byTeam = {1:[],2:[],3:[]};
       starters.forEach(s => byTeam[s.team].push(s));
 
@@ -747,28 +718,32 @@ window.checkS = async function(raceId, raceName) {
     }
 
     document.getElementById("modal-body").innerHTML = out;
-
-  } else {
-    // Fallback: manual checklist (jouw originele gedrag)
-    const tc = {1:"var(--t1)",2:"var(--t2)",3:"var(--t3)"};
-    let cl = "";
-    [1,2,3].forEach(function(t) {
-      const riders = getTeam(t);
-      cl += '<div style="margin-bottom:16px"><div style="font-family:\'Bebas Neue\',sans-serif;letter-spacing:2px;font-size:15px;color:#fff;background:'+tc[t]+';padding:5px 12px;border-radius:3px;margin-bottom:6px;display:inline-block">Team '+t+'</div>';
-      riders.forEach(function(r) {
-        const id = "c_"+r.replace(/[^a-zA-Z0-9]/g,"_");
-        cl += '<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)"><input type="checkbox" id="'+id+'" style="accent-color:'+tc[t]+';width:15px;height:15px;cursor:pointer" onchange="cntS()"><label for="'+id+'" style="font-size:13px;cursor:pointer;font-weight:500">'+r+'</label></div>';
-      });
-      cl += "</div>";
-    });
-    document.getElementById("modal-body").innerHTML =
-      '<div style="margin-bottom:16px;padding:12px 14px;background:rgba(196,52,26,.1);border:1px solid var(--accent2);border-radius:4px">'
-      +'<p style="font-size:13px;color:var(--muted);margin-bottom:10px">Automatisch ophalen mislukt. Open de startlijst en vink handmatig aan:</p>'
-      +'<a href="'+pcsUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;padding:8px 16px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none">&#8599; Open ProcyclingStats</a></div>'
-      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
-      +'<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>'
-      +'<span id="cnt" style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:var(--accent)">0 starters</span></div>'+cl;
+    return;
   }
+
+  // fallback manual checklist + debug
+  const tc = {1:"var(--t1)",2:"var(--t2)",3:"var(--t3)"};
+  let cl = "";
+  [1,2,3].forEach(function(t) {
+    const riders = getTeam(t);
+    cl += '<div style="margin-bottom:16px"><div style="font-family:\'Bebas Neue\',sans-serif;letter-spacing:2px;font-size:15px;color:#fff;background:'+tc[t]+';padding:5px 12px;border-radius:3px;margin-bottom:6px;display:inline-block">Team '+t+'</div>';
+    riders.forEach(function(r) {
+      const id = "c_"+r.replace(/[^a-zA-Z0-9]/g,"_");
+      cl += '<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)"><input type="checkbox" id="'+id+'" style="accent-color:'+tc[t]+';width:15px;height:15px;cursor:pointer" onchange="cntS()"><label for="'+id+'" style="font-size:13px;cursor:pointer;font-weight:500">'+r+'</label></div>';
+    });
+    cl += "</div>";
+  });
+
+  document.getElementById("modal-body").innerHTML =
+    '<div style="margin-bottom:16px;padding:12px 14px;background:rgba(196,52,26,.1);border:1px solid var(--accent2);border-radius:4px">'
+    +'<p style="font-size:13px;color:var(--muted);margin-bottom:10px">Automatisch ophalen mislukt. Open de startlijst en vink handmatig aan.</p>'
+    +'<a href="'+pcsUrl+'" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;padding:8px 16px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none">↗ Open ProcyclingStats</a>'
+    +'<div style="margin-top:10px;font-size:11px;color:var(--muted);font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">Debug: '+(lastErr||"—")+'</div>'
+    +'</div>'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+    +'<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>'
+    +'<span id="cnt" style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:var(--accent)">0 starters</span></div>'
+    +cl;
 };
 
 window.cntS = function() {
@@ -777,6 +752,7 @@ window.cntS = function() {
   if (el) el.textContent = n+(n===1?" starter":" starters");
 };
 
+// Nieuws (ongewijzigd)
 async function fetchRSS(name) {
   if (ncache[name] !== undefined) return ncache[name];
   const parts = name.trim().split(/\s+/);
