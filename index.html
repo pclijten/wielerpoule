@@ -610,32 +610,67 @@ window.riderNews = function(name) {
     +'</div>');
 };
 
-// STARTERS
+// ─── STARTLIJST HELPERS ──────────────────────────────────────────────────────
+
+// Normalize: lowercase, strip accents, keep only letters and spaces
 function norm(s) {
   return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z\s]/g," ").replace(/\s+/g," ").trim();
 }
+
+// Parse poule name format "VAN DER POEL Mathieu" → { first:"mathieu", surParts:["van","der","poel"] }
 function parsePouleName(pouleName) {
   const parts = (pouleName||"").trim().split(/\s+/);
-  const sur = [];
+  const surParts = [];
   let i = 0;
   for (; i < parts.length; i++) {
-    if (parts[i] && parts[i] === parts[i].toUpperCase()) sur.push(parts[i]);
+    if (parts[i] && parts[i] === parts[i].toUpperCase() && /[A-Z]/.test(parts[i])) surParts.push(norm(parts[i]));
     else break;
   }
-  return { first: norm((parts.slice(i)[0])||""), surname: norm(sur.join(" ")) };
+  const first = norm((parts.slice(i)[0]) || "");
+  return { first, surParts };
 }
+
+// ── Match against a FirstCycling display name (e.g. "Mathieu van der Poel") ──
 function matchFC(fcName, pouleName) {
   const fc = norm(fcName);
   const p = parsePouleName(pouleName);
-  if (!p.first || !p.surname) return false;
+  if (!p.first || !p.surParts.length) return false;
   if (!fc.includes(p.first)) return false;
-  return p.surname.split(" ").filter(w => w.length >= 2).every(w => fc.includes(w));
+  // All significant surname parts must appear in the FC name
+  return p.surParts.filter(w => w.length >= 2).every(w => fc.includes(w));
 }
+
+// ── Extract rider display names from FirstCycling HTML ──
 function extractFCNames(html) {
-  const found = [...html.matchAll(/href=["'][^"']*rider\.php\?id=\d+[^"']*["'][^>]*>([^<]+)<\/a>/gi)];
-  return [...new Set(found.map(m => (m[1]||"").trim()).filter(Boolean))];
+  const found = [...html.matchAll(/href=["'][^"']*rider\.php\?[^"']*id=\d+[^"']*["'][^>]*>\s*([^<]+?)\s*<\/a>/gi)];
+  return [...new Set(found.map(m => (m[1]||"").trim()).filter(n => n.length > 3 && n.length < 60))];
 }
-async function fetchViaProxies(url, timeoutMs=10000) {
+
+// ── Extract rider URL slugs from PCS HTML (e.g. "mathieu-van-der-poel") ──
+function extractPCSSlugs(html) {
+  // Matches /rider/slug  and /rider/slug/year/...
+  const found = [...html.matchAll(/href=["']\/rider\/([a-z0-9][a-z0-9-]{2,50})(?:\/[^"']*)?["']/gi)];
+  return [...new Set(found.map(m => m[1]).filter(s => s && !s.startsWith("statistics") && !s.startsWith("ranking")))];
+}
+
+// ── Match a PCS slug against a poule name ──
+// Slug "mathieu-van-der-poel" → space-separated "mathieu van der poel"
+// Must contain firstname AND at least the primary surname word
+function matchPCSSlug(slug, pouleName) {
+  const s = slug.replace(/-/g, " ");   // already lowercase ascii
+  const p = parsePouleName(pouleName);
+  if (!p.first || !p.surParts.length) return false;
+  if (!s.includes(p.first)) return false;
+  const sigSur = p.surParts.filter(w => w.length >= 2);
+  if (!sigSur.length) return false;
+  // Try strict first: all surname parts in slug
+  if (sigSur.every(w => s.includes(w))) return true;
+  // Fallback: primary surname word matches (handles "VINGEGAARD RASMUSSEN Jonas" → slug "jonas-vingegaard")
+  return s.includes(sigSur[0]);
+}
+
+// ── Fetch via CORS proxies ──
+async function fetchViaProxies(url, timeoutMs=12000) {
   const proxies = [
     "https://corsproxy.io/?"+encodeURIComponent(url),
     "https://api.allorigins.win/get?url="+encodeURIComponent(url)
@@ -648,11 +683,78 @@ async function fetchViaProxies(url, timeoutMs=10000) {
       if (proxy.includes("allorigins")) { const j = await resp.json(); html = j.contents||""; }
       else { html = await resp.text(); }
       if (html && html.length > 1500) return html;
-    } catch(e) { /* next */ }
+    } catch(e) { /* try next */ }
   }
   return null;
 }
 
+// ── Render the starters result inside the modal ──
+function renderStartersResult(starters, mine, totalFound, sourceName, sourceUrl, altUrl) {
+  const notStarting = mine.filter(m => !starters.find(s => s.name === m.name));
+
+  let out = `<div style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:4px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:12px;color:var(--muted)">${sourceName} &mdash; ${totalFound} renners op startlijst gevonden</span>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a href="${sourceUrl}" target="_blank" style="color:var(--accent);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px">&#8599; ${sourceName}</a>
+      ${altUrl ? `<a href="${altUrl}" target="_blank" style="color:var(--muted);font-size:12px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px">&#8599; ${sourceName==="FirstCycling"?"ProCyclingStats":"FirstCycling"}</a>` : ""}
+    </div>
+  </div>`;
+
+  if (!starters.length) {
+    out += '<div class="empty" style="padding:24px">Geen van jouw renners staat op de startlijst.</div>';
+  } else {
+    out += `<p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+      <strong style="color:var(--accent);font-size:22px">${starters.length}</strong> van jouw renners starten:
+    </p>
+    <div class="slist">`;
+    starters.forEach(s => {
+      out += `<span class="chip t${s.team}">${s.name} <span style="opacity:.5;font-size:10px;margin-left:4px">T${s.team}</span></span>`;
+    });
+    out += `</div>`;
+  }
+
+  if (notStarting.length) {
+    out += `<details style="margin-top:16px">
+      <summary style="font-size:12px;color:var(--muted);cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px">
+        Niet op startlijst (${notStarting.length})
+      </summary>
+      <p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.9">${notStarting.map(m=>m.name).join(" &middot; ")}</p>
+    </details>`;
+  }
+  return out;
+}
+
+// ── Manual fallback checklist ──
+function renderManualFallback(raceName, fcUrl, pcsUrl) {
+  const tc = {1:"var(--t1)",2:"var(--t2)",3:"var(--t3)"};
+  let cl = "";
+  [1,2,3].forEach(t => {
+    const riders = getTeam(t);
+    cl += `<div style="margin-bottom:16px">
+      <div style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:15px;color:#fff;background:${tc[t]};padding:5px 12px;border-radius:3px;margin-bottom:6px;display:inline-block">Team ${t}</div>`;
+    riders.forEach(r => {
+      const id = "c_"+r.replace(/[^a-zA-Z0-9]/g,"_");
+      cl += `<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)">
+        <input type="checkbox" id="${id}" style="accent-color:${tc[t]};width:15px;height:15px;cursor:pointer" onchange="cntS()">
+        <label for="${id}" style="font-size:13px;cursor:pointer;font-weight:500">${r}</label>
+      </div>`;
+    });
+    cl += "</div>";
+  });
+  return `<div style="margin-bottom:16px;padding:12px 14px;background:rgba(196,52,26,.1);border:1px solid var(--accent2);border-radius:4px">
+    <p style="font-size:13px;color:var(--muted);margin-bottom:10px">Automatisch ophalen mislukt. Open de startlijst en vink handmatig aan:</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      ${fcUrl ? `<a href="${fcUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none">&#8599; FirstCycling</a>` : ""}
+      <a href="${pcsUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--surface2);color:var(--text);border:1px solid var(--border);padding:8px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none">&#8599; ProCyclingStats</a>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>
+    <span id="cnt" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent)">0 starters</span>
+  </div>${cl}`;
+}
+
+// ── Main starters function ──
 window.checkS = async function(raceId, raceName) {
   const year = new Date().getFullYear();
   const fcId = FC[raceName];
@@ -662,55 +764,40 @@ window.checkS = async function(raceId, raceName) {
 
   openModal("&#128690; Starters: "+raceName, '<div class="loading"><div class="spin"></div>Startlijst ophalen...</div>');
 
+  const mine = allR();
+
+  // ── 1. Probeer FirstCycling (als beschikbaar) ──
   if (fcUrl) {
     const html = await fetchViaProxies(fcUrl, 12000);
     if (html) {
       const fcNames = extractFCNames(html);
-      const mine = allR();
-      const starters = mine.filter(m => fcNames.some(n => matchFC(n, m.name)));
-      const rest = mine.filter(m => !starters.includes(m)).map(m => m.name);
-      let out = '<div style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:4px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">'
-        +'<span style="font-size:12px;color:var(--muted)">FirstCycling &mdash; '+fcNames.length+' renners gevonden</span>'
-        +'<div style="display:flex;gap:10px;flex-wrap:wrap">'
-        +'<a href="'+fcUrl+'" target="_blank" style="color:var(--accent);font-size:12px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">&#8599; FirstCycling</a>'
-        +'<a href="'+pcsUrl+'" target="_blank" style="color:var(--muted);font-size:12px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">&#8599; ProCyclingStats</a>'
-        +'</div></div>';
-      if (!starters.length) {
-        out += '<div class="empty">Geen van jouw renners staan op de startlijst.</div>';
-      } else {
-        out += '<p style="font-size:13px;color:var(--muted);margin-bottom:12px"><strong style="color:var(--accent);font-size:18px">'+starters.length+'</strong> van jouw renners starten in '+raceName+':</p>';
-        out += '<div class="slist">';
-        starters.forEach(s => { out += '<span class="chip t'+s.team+'">'+s.name+' <span style="opacity:.5;font-size:10px;margin-left:4px">T'+s.team+'</span></span>'; });
-        out += '</div>';
+      if (fcNames.length > 3) {
+        const starters = mine.filter(m => fcNames.some(n => matchFC(n, m.name)));
+        document.getElementById("modal-body").innerHTML =
+          renderStartersResult(starters, mine, fcNames.length, "FirstCycling", fcUrl, pcsUrl);
+        return;
       }
-      if (rest.length) {
-        out += '<details style="margin-top:16px"><summary style="font-size:12px;color:var(--muted);cursor:pointer;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">Niet op startlijst ('+rest.length+')</summary>'
-          +'<p style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.8">'+rest.join(" &middot; ")+'</p></details>';
-      }
-      document.getElementById("modal-body").innerHTML = out;
+    }
+  }
+
+  // ── 2. Probeer ProCyclingStats (slug-matching) ──
+  // Update status indicator in modal
+  const mb = document.getElementById("modal-body");
+  if (mb) mb.innerHTML = '<div class="loading"><div class="spin"></div>ProCyclingStats proberen...</div>';
+
+  const pcsHtml = await fetchViaProxies(pcsUrl, 14000);
+  if (pcsHtml) {
+    const slugs = extractPCSSlugs(pcsHtml);
+    if (slugs.length > 3) {
+      const starters = mine.filter(m => slugs.some(s => matchPCSSlug(s, m.name)));
+      document.getElementById("modal-body").innerHTML =
+        renderStartersResult(starters, mine, slugs.length, "ProCyclingStats", pcsUrl, fcUrl||null);
       return;
     }
   }
 
-  // Fallback: manual checklist
-  const tc = {1:"var(--t1)",2:"var(--t2)",3:"var(--t3)"};
-  let cl = "";
-  [1,2,3].forEach(t => {
-    const riders = getTeam(t);
-    cl += '<div style="margin-bottom:16px"><div style="font-family:\'Bebas Neue\',sans-serif;letter-spacing:2px;font-size:15px;color:#fff;background:'+tc[t]+';padding:5px 12px;border-radius:3px;margin-bottom:6px;display:inline-block">Team '+t+'</div>';
-    riders.forEach(r => {
-      const id = "c_"+r.replace(/[^a-zA-Z0-9]/g,"_");
-      cl += '<div style="display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--border)"><input type="checkbox" id="'+id+'" style="accent-color:'+tc[t]+';width:15px;height:15px;cursor:pointer" onchange="cntS()"><label for="'+id+'" style="font-size:13px;cursor:pointer;font-weight:500">'+r+'</label></div>';
-    });
-    cl += "</div>";
-  });
-  document.getElementById("modal-body").innerHTML =
-    '<div style="margin-bottom:16px;padding:12px 14px;background:rgba(196,52,26,.1);border:1px solid var(--accent2);border-radius:4px">'
-    +'<p style="font-size:13px;color:var(--muted);margin-bottom:10px">Automatisch ophalen mislukt. Open de startlijst en vink handmatig aan:</p>'
-    +'<a href="'+(fcUrl||pcsUrl)+'" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;padding:8px 16px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none">&#8599; Open startlijst</a></div>'
-    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
-    +'<span style="font-family:\'Barlow Condensed\',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Vink aan wie er start:</span>'
-    +'<span id="cnt" style="font-family:\'Bebas Neue\',sans-serif;font-size:20px;color:var(--accent)">0 starters</span></div>'+cl;
+  // ── 3. Handmatige fallback ──
+  document.getElementById("modal-body").innerHTML = renderManualFallback(raceName, fcUrl, pcsUrl);
 };
 
 window.cntS = function() {
