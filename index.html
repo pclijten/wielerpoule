@@ -55,8 +55,6 @@ main{position:relative;z-index:1;padding:32px;max-width:1400px;margin:0 auto}
 .rrow:last-child{border-bottom:none}
 .rname{flex:1;font-size:13px;font-weight:500;letter-spacing:.5px}
 .rpts{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:600;color:var(--accent);min-width:50px;text-align:right}
-.nbtn{background:none;border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:3px;font-size:11px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;transition:all .2s}
-.nbtn:hover{border-color:var(--accent);color:var(--accent)}
 
 /* RACES */
 .rtbl{width:100%;border-collapse:collapse;background:var(--surface);border-radius:4px;overflow:hidden}
@@ -90,7 +88,7 @@ main{position:relative;z-index:1;padding:32px;max-width:1400px;margin:0 auto}
 .fg{display:flex;flex-direction:column;gap:6px}
 .fg label{font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
 .fg select,.fg input,.mi{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:3px;font-family:'Barlow',sans-serif;font-size:13px;outline:none;transition:border-color .2s}
-.fg select:focus,.fg input:focus{border-color:var(--accent)}
+.fg select:focus,.fg input:focus,.mi:focus{border-color:var(--accent)}
 .fg select option{background:var(--surface2)}
 .bp{background:var(--accent);color:#000;border:none;padding:10px 20px;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;border-radius:3px;transition:opacity .2s;white-space:nowrap}
 .bp:hover{opacity:.88}
@@ -107,26 +105,7 @@ main{position:relative;z-index:1;padding:32px;max-width:1400px;margin:0 auto}
 .arf{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
 .arf input,.arf select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:3px;font-family:'Barlow',sans-serif;font-size:13px;outline:none}
 .arf input{flex:1;min-width:160px}
-.mi{flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:3px;font-size:13px;outline:none;font-family:'Barlow',sans-serif}
-
-/* NEWS */
-.ngrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
-.ncard{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:border-color .2s,transform .15s}
-.ncard:hover{border-color:var(--accent);transform:translateY(-2px)}
-.nhead{padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
-.nhead.t1{background:rgba(26,110,60,.25);border-left:3px solid var(--t1)}
-.nhead.t2{background:rgba(26,61,110,.25);border-left:3px solid var(--t2)}
-.nhead.t3{background:rgba(110,26,26,.25);border-left:3px solid var(--t3)}
-.nrider{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;flex:1}
-.nteam{font-size:10px;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;color:var(--muted)}
-.nart{padding:10px 14px;border-bottom:1px solid var(--border)}
-.nart:last-child{border-bottom:none}
-.nart a{color:var(--text);text-decoration:none;font-size:13px;font-weight:500;line-height:1.4;display:block;margin-bottom:3px;transition:color .15s}
-.nart a:hover{color:var(--accent)}
-.nmet{font-size:11px;color:var(--muted);font-family:'Barlow Condensed',sans-serif}
-.nload{padding:16px 14px;color:var(--muted);font-size:12px;display:flex;align-items:center;gap:8px}
-.nempty{padding:14px;color:var(--muted);font-size:12px;font-style:italic}
-.nhide{display:none!important}
+.mi{width:100%}
 
 /* MODAL */
 .mov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;animation:fi .2s}
@@ -174,18 +153,15 @@ main{position:relative;z-index:1;padding:32px;max-width:1400px;margin:0 auto}
     <button onclick="showTab('races',this)">Wedstrijden</button>
     <button onclick="showTab('scores',this)">Puntenstand</button>
     <button onclick="showTab('manage',this)">Beheer</button>
-    <button onclick="showTab('news',this)">Nieuws</button>
   </nav>
 </header>
 
 <main>
-  <!-- TEAMS -->
   <div class="tab active" id="tab-teams">
     <div class="sec">Mijn Poule Teams</div>
     <div class="tgrid" id="teams-grid"></div>
   </div>
 
-  <!-- RACES -->
   <div class="tab" id="tab-races">
     <div class="sec">Wedstrijdkalender 2026</div>
     <table class="rtbl">
@@ -194,7 +170,6 @@ main{position:relative;z-index:1;padding:32px;max-width:1400px;margin:0 auto}
     </table>
   </div>
 
-  <!-- SCORES -->
   <div class="tab" id="tab-scores">
     <div class="sec">Scorebord</div>
     <div class="sbrd" id="scoreboard"></div>
@@ -222,7 +197,6 @@ main{position:relative;z-index:1;padding:32px;max-width:1400px;margin:0 auto}
     </table>
   </div>
 
-  <!-- MANAGE -->
   <div class="tab" id="tab-manage">
     <div class="sec">Renners beheren</div>
     <div style="margin-bottom:20px;padding:14px 18px;background:var(--surface);border:1px solid var(--border);border-radius:4px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -243,30 +217,21 @@ main{position:relative;z-index:1;padding:32px;max-width:1400px;margin:0 auto}
     <div class="sec">Wedstrijden beheren</div>
     <div class="arf">
       <input id="nr-race" placeholder="Naam wedstrijd...">
-      <select id="nr-type"><option value="Eendaagse">Eendaagse</option><option value="Monument">Monument</option><option value="Rittenkoers">Rittenkoers</option><option value="Grote Ronde">Grote Ronde</option><option value="Divers">Divers</option></select>
+      <select id="nr-type">
+        <option value="Eendaagse">Eendaagse</option>
+        <option value="Monument">Monument</option>
+        <option value="Rittenkoers">Rittenkoers</option>
+        <option value="Grote Ronde">Grote Ronde</option>
+        <option value="Divers">Divers</option>
+      </select>
       <input id="nr-date" placeholder="Datum">
+      <input id="nr-startlist" placeholder="Officiële startlijst URL...">
       <button class="bp" onclick="addRace()">+ Toevoegen</button>
     </div>
     <div id="manage-races"></div>
   </div>
-
-  <!-- NEWS -->
-  <div class="tab" id="tab-news">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
-      <div class="sec" style="margin-bottom:0">Renners Nieuws</div>
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <select id="nf" onchange="filterNews()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:3px;font-family:'Barlow',sans-serif;font-size:13px;outline:none">
-          <option value="0">Alle teams</option><option value="1">Team 1</option><option value="2">Team 2</option><option value="3">Team 3</option>
-        </select>
-        <button class="bp" onclick="loadNews()" id="news-btn" style="padding:8px 18px;font-size:13px">&#128260; Nieuws laden (laatste 2 weken)</button>
-      </div>
-    </div>
-    <div id="news-status" style="display:none;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:20px;font-size:13px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px"></div>
-    <div class="ngrid" id="news-grid"><div class="empty" style="grid-column:1/-1">Klik op "Nieuws laden" om het nieuws van de afgelopen 2 weken op te halen.</div></div>
-  </div>
 </main>
 
-<!-- MODAL -->
 <div id="modal" class="mov" style="display:none" onclick="overlayClose(event)">
   <div class="mo">
     <div class="moh"><span class="mot" id="modal-title">—</span><button class="moc" onclick="closeModal()">&#10005;</button></div>
@@ -298,58 +263,35 @@ const DT = {
 };
 
 const DR = [
-  {id:1,name:"Omloop het Nieuwsblad",type:"Eendaagse",date:"28 feb 2026"},
-  {id:2,name:"Strade Bianche",type:"Monument",date:"7 mrt 2026"},
-  {id:3,name:"Parijs-Nice",type:"Rittenkoers",date:"9 mrt 2026"},
-  {id:4,name:"Tirreno Adriatico",type:"Rittenkoers",date:"11 mrt 2026"},
-  {id:5,name:"Milaan - San Remo",type:"Monument",date:"21 mrt 2026"},
-  {id:6,name:"E3 Prijs",type:"Eendaagse",date:"27 mrt 2026"},
-  {id:7,name:"Gent - Wevelgem",type:"Eendaagse",date:"29 mrt 2026"},
-  {id:8,name:"Ronde van Catalonië",type:"Rittenkoers",date:"23 mrt 2026"},
-  {id:9,name:"Dwars door Vlaanderen",type:"Eendaagse",date:"1 apr 2026"},
-  {id:10,name:"Ronde van Vlaanderen",type:"Monument",date:"5 apr 2026"},
-  {id:11,name:"Scheldeprijs",type:"Eendaagse",date:"8 apr 2026"},
-  {id:12,name:"Ronde van het Baskenland",type:"Rittenkoers",date:"6 apr 2026"},
-  {id:13,name:"Parijs - Roubaix",type:"Monument",date:"12 apr 2026"},
-  {id:14,name:"Amstel Gold Race",type:"Eendaagse",date:"19 apr 2026"},
-  {id:15,name:"Waalse Pijl",type:"Eendaagse",date:"22 apr 2026"},
-  {id:16,name:"Luik - Bastenaken - Luik",type:"Monument",date:"26 apr 2026"},
-  {id:17,name:"Ronde van Romandië",type:"Rittenkoers",date:"28 apr 2026"},
-  {id:18,name:"Giro d'Italia",type:"Grote Ronde",date:"9 mei 2026"},
-  {id:19,name:"Critérium du Dauphiné",type:"Rittenkoers",date:"31 mei 2026"},
-  {id:20,name:"Ronde van Zwitserland",type:"Rittenkoers",date:"7 jun 2026"},
-  {id:21,name:"NK Wielrennen",type:"Divers",date:"28 jun 2026"},
-  {id:22,name:"Tour de France",type:"Grote Ronde",date:"4 jul 2026"},
-  {id:23,name:"Clasica San Sebastian",type:"Eendaagse",date:"1 aug 2026"},
-  {id:24,name:"Renewi Tour (Benelux)",type:"Rittenkoers",date:"11 aug 2026"},
-  {id:25,name:"La Vuelta Ciclista a España",type:"Grote Ronde",date:"22 aug 2026"},
-  {id:26,name:"GP Québec",type:"Eendaagse",date:"11 sep 2026"},
-  {id:27,name:"GP Montréal",type:"Eendaagse",date:"13 sep 2026"},
-  {id:28,name:"WK (tijdrit)",type:"Divers",date:"20 sep 2026"}
+  {id:1,name:"Omloop het Nieuwsblad",type:"Eendaagse",date:"28 feb 2026",startlistUrl:""},
+  {id:2,name:"Strade Bianche",type:"Monument",date:"7 mrt 2026",startlistUrl:""},
+  {id:3,name:"Parijs-Nice",type:"Rittenkoers",date:"9 mrt 2026",startlistUrl:""},
+  {id:4,name:"Tirreno Adriatico",type:"Rittenkoers",date:"11 mrt 2026",startlistUrl:""},
+  {id:5,name:"Milaan - San Remo",type:"Monument",date:"21 mrt 2026",startlistUrl:""},
+  {id:6,name:"E3 Prijs",type:"Eendaagse",date:"27 mrt 2026",startlistUrl:""},
+  {id:7,name:"Gent - Wevelgem",type:"Eendaagse",date:"29 mrt 2026",startlistUrl:""},
+  {id:8,name:"Ronde van Catalonië",type:"Rittenkoers",date:"23 mrt 2026",startlistUrl:""},
+  {id:9,name:"Dwars door Vlaanderen",type:"Eendaagse",date:"1 apr 2026",startlistUrl:""},
+  {id:10,name:"Ronde van Vlaanderen",type:"Monument",date:"5 apr 2026",startlistUrl:""},
+  {id:11,name:"Scheldeprijs",type:"Eendaagse",date:"8 apr 2026",startlistUrl:""},
+  {id:12,name:"Ronde van het Baskenland",type:"Rittenkoers",date:"6 apr 2026",startlistUrl:""},
+  {id:13,name:"Parijs - Roubaix",type:"Monument",date:"12 apr 2026",startlistUrl:""},
+  {id:14,name:"Amstel Gold Race",type:"Eendaagse",date:"19 apr 2026",startlistUrl:""},
+  {id:15,name:"Waalse Pijl",type:"Eendaagse",date:"22 apr 2026",startlistUrl:""},
+  {id:16,name:"Luik - Bastenaken - Luik",type:"Monument",date:"26 apr 2026",startlistUrl:""},
+  {id:17,name:"Ronde van Romandië",type:"Rittenkoers",date:"28 apr 2026",startlistUrl:""},
+  {id:18,name:"Giro d'Italia",type:"Grote Ronde",date:"9 mei 2026",startlistUrl:""},
+  {id:19,name:"Critérium du Dauphiné",type:"Rittenkoers",date:"31 mei 2026",startlistUrl:""},
+  {id:20,name:"Ronde van Zwitserland",type:"Rittenkoers",date:"7 jun 2026",startlistUrl:""},
+  {id:21,name:"NK Wielrennen",type:"Divers",date:"28 jun 2026",startlistUrl:""},
+  {id:22,name:"Tour de France",type:"Grote Ronde",date:"4 jul 2026",startlistUrl:""},
+  {id:23,name:"Clasica San Sebastian",type:"Eendaagse",date:"1 aug 2026",startlistUrl:""},
+  {id:24,name:"Renewi Tour (Benelux)",type:"Rittenkoers",date:"11 aug 2026",startlistUrl:""},
+  {id:25,name:"La Vuelta Ciclista a España",type:"Grote Ronde",date:"22 aug 2026",startlistUrl:""},
+  {id:26,name:"GP Québec",type:"Eendaagse",date:"11 sep 2026",startlistUrl:""},
+  {id:27,name:"GP Montréal",type:"Eendaagse",date:"13 sep 2026",startlistUrl:""},
+  {id:28,name:"WK (tijdrit)",type:"Divers",date:"20 sep 2026",startlistUrl:""}
 ];
-
-const PCS = {
-  "Omloop het Nieuwsblad":"omloop-het-nieuwsblad","Strade Bianche":"strade-bianche",
-  "Parijs-Nice":"paris-nice","Tirreno Adriatico":"tirreno-adriatico",
-  "Milaan - San Remo":"milano-sanremo","E3 Prijs":"e3-saxo-bank-classic",
-  "Gent - Wevelgem":"gent-wevelgem","Ronde van Catalonië":"volta-a-catalunya",
-  "Dwars door Vlaanderen":"dwars-door-vlaanderen","Ronde van Vlaanderen":"ronde-van-vlaanderen",
-  "Scheldeprijs":"scheldeprijs","Ronde van het Baskenland":"itzulia-basque-country",
-  "Parijs - Roubaix":"paris-roubaix","Amstel Gold Race":"amstel-gold-race",
-  "Waalse Pijl":"la-fleche-wallonne","Luik - Bastenaken - Luik":"liege-bastogne-liege",
-  "Ronde van Romandië":"tour-de-romandie","Giro d'Italia":"giro-d-italia",
-  "Critérium du Dauphiné":"criterium-du-dauphine","Ronde van Zwitserland":"tour-de-suisse",
-  "NK Wielrennen":"netherlands-championships-rr","Tour de France":"tour-de-france",
-  "Clasica San Sebastian":"clasica-ciclista-san-sebastian","Renewi Tour (Benelux)":"renewi-tour",
-  "La Vuelta Ciclista a España":"vuelta-a-espana","GP Québec":"gp-de-quebec",
-  "GP Montréal":"gp-de-montreal","WK (tijdrit)":"uci-road-world-championships"
-};
-
-const FC = {
-  "Omloop het Nieuwsblad":53,"Strade Bianche":54,"Parijs-Nice":2,
-  "Tirreno Adriatico":3,"Milaan - San Remo":4,"E3 Prijs":47,
-  "Gent - Wevelgem":7,"Dwars door Vlaanderen":75,"Ronde van Vlaanderen":5,"Parijs - Roubaix":8
-};
 
 const PTB = {
   Eendaagse:[200,161,136,116,101,87,76,65,56,47],
@@ -361,7 +303,6 @@ const PTB = {
 
 let S = {teams:{1:[],2:[],3:[]}, races:[], scores:{}, nextId:100};
 let first = true;
-const ncache = {};
 
 function getTeam(t) {
   let r = S.teams[t] || S.teams[String(t)] || [];
@@ -416,7 +357,7 @@ async function initDB() {
           if (!Array.isArray(r)) r = Object.values(r);
           S.teams[t] = r.filter(v => typeof v === "string" && v.trim());
         });
-        S.races = d.races || DR;
+        S.races = (d.races || DR).map(r => ({ ...r, startlistUrl: r.startlistUrl || "" }));
         S.scores = d.scores || {};
         S.nextId = d.nextId || 100;
         render();
@@ -426,7 +367,11 @@ async function initDB() {
       conn(true);
       hideL();
     }, e => { conn(false); hideL(); console.error(e); });
-  } catch(e) { conn(false); hideL(); console.error(e); }
+  } catch(e) {
+    conn(false);
+    hideL();
+    console.error(e);
+  }
 }
 
 function hideL() {
@@ -471,8 +416,7 @@ function renderTeams() {
     let html = '<div class="tcard"><div class="thead t'+t+'"><span>Team '+t+'</span><span class="tpts">'+tpts(t)+' pts</span></div>';
     riders.forEach(r => {
       const rp = sarr().filter(s => s.riderName === r).reduce((a,b) => a+(b.points||0), 0);
-      const safe = r.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
-      html += '<div class="rrow"><span class="rname">'+r+'</span><span class="rpts">'+(rp||"")+'</span><button class="nbtn" onclick="riderNews(\''+safe+'\')">Nieuws</button></div>';
+      html += '<div class="rrow"><span class="rname">'+r+'</span><span class="rpts">'+(rp||"")+'</span></div>';
     });
     html += "</div>";
     g.innerHTML += html;
@@ -521,14 +465,24 @@ function renderManage() {
     const el = document.getElementById("mt"+t);
     if (!el) return;
     const riders = getTeam(t);
-    el.innerHTML = riders.map((r,i) => '<div class="sr"><strong style="font-size:12px">'+r+'</strong><button class="bd" onclick="delRider('+t+','+i+')" style="padding:3px 8px;font-size:11px">&#10005;</button></div>').join("")
-      || '<div style="padding:8px;color:var(--muted);font-size:12px">Geen renners</div>';
+    el.innerHTML = riders.map((r,i) => '<div class="sr"><strong style="font-size:12px">'+r+'</strong><button class="bd" onclick="delRider('+t+','+i+')" style="padding:3px 8px;font-size:11px">&#10005;</button></div>').join("") || '<div style="padding:8px;color:var(--muted);font-size:12px">Geen renners</div>';
   });
+
   const ml = document.getElementById("manage-races");
   if (!ml) return;
-  ml.innerHTML = '<table class="rtbl"><thead><tr><th>Wedstrijd</th><th>Type</th><th>Datum</th><th></th></tr></thead><tbody>'
-    +(S.races||[]).map(r => '<tr><td style="font-weight:500">'+r.name+'</td><td><span class="rt '+rtc(r.type)+'">'+r.type+'</span></td><td style="color:var(--muted);font-size:12px">'+(r.date||"")+'</td><td><button class="bd" onclick="delRace('+r.id+')">&#10005;</button></td></tr>').join("")
-    +'</tbody></table>';
+
+  ml.innerHTML = '<table class="rtbl"><thead><tr><th>Wedstrijd</th><th>Type</th><th>Datum</th><th>Officiële startlijst URL</th><th></th><th></th></tr></thead><tbody>'
+    + (S.races || []).map(r =>
+      '<tr>'
+      + '<td style="font-weight:500">'+r.name+'</td>'
+      + '<td><span class="rt '+rtc(r.type)+'">'+r.type+'</span></td>'
+      + '<td style="color:var(--muted);font-size:12px">'+(r.date || "")+'</td>'
+      + '<td><input class="mi" id="slu_'+r.id+'" value="'+escapeAttr(r.startlistUrl || "")+'" placeholder="https://..."></td>'
+      + '<td><button class="bp" onclick="saveRaceUrl('+r.id+')" style="padding:8px 12px">Opslaan</button></td>'
+      + '<td><button class="bd" onclick="delRace('+r.id+')">&#10005;</button></td>'
+      + '</tr>'
+    ).join("")
+    + '</tbody></table>';
 }
 
 function renderSelects() {
@@ -544,7 +498,14 @@ function renderSelects() {
   if (prc) rc.value = prc;
 }
 
-// ACTIONS
+function escapeAttr(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 window.addScore = async function() {
   const rv = document.getElementById("sc-rider").value;
   const rid = parseInt(document.getElementById("sc-race").value);
@@ -587,15 +548,34 @@ window.addRace = async function() {
   const name = document.getElementById("nr-race").value.trim();
   const type = document.getElementById("nr-type").value;
   const date = document.getElementById("nr-date").value.trim();
+  const startlistUrl = document.getElementById("nr-startlist").value.trim();
+
   if (!name) return;
-  await set(ref(db,"wielerpoule/races"), [...(S.races||[]), {id:S.nextId, name, type, date}]);
-  await set(ref(db,"wielerpoule/nextId"), S.nextId+1);
+
+  await set(ref(db,"wielerpoule/races"), [
+    ...(S.races || []),
+    { id:S.nextId, name, type, date, startlistUrl }
+  ]);
+
+  await set(ref(db,"wielerpoule/nextId"), S.nextId + 1);
+
   document.getElementById("nr-race").value = "";
   document.getElementById("nr-date").value = "";
+  document.getElementById("nr-startlist").value = "";
 };
 
 window.delRace = async function(id) {
   await set(ref(db,"wielerpoule/races"), (S.races||[]).filter(r => r.id!==id));
+};
+
+window.saveRaceUrl = async function(id) {
+  const inp = document.getElementById("slu_" + id);
+  const url = inp ? inp.value.trim() : "";
+
+  await set(
+    ref(db,"wielerpoule/races"),
+    (S.races || []).map(r => r.id === id ? { ...r, startlistUrl: url } : r)
+  );
 };
 
 window.resetTeams = async function() {
@@ -604,7 +584,6 @@ window.resetTeams = async function() {
   alert("Teams gereset naar origineel!");
 };
 
-// MODAL
 function openModal(title, body) {
   document.getElementById("modal-title").innerHTML = title;
   document.getElementById("modal-body").innerHTML = body;
@@ -617,72 +596,30 @@ window.overlayClose = function(e) {
   if (e.target===document.getElementById("modal")) closeModal();
 };
 
-window.riderNews = function(name) {
-  const q = encodeURIComponent(name+" wielrenner 2026");
-  const slug = name.toLowerCase().replace(/\s+/g,"-").replace(/[^a-z0-9-]/g,"");
-  openModal("Nieuws: "+name,
-    '<div style="display:flex;flex-direction:column;gap:10px">'
-    +'<a href="https://news.google.com/search?q='+q+'&hl=nl&gl=NL&ceid=NL:nl" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);padding:14px 18px;border-radius:4px;text-decoration:none">'
-    +'<span style="font-size:22px">&#128240;</span><div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">Google News</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Laatste nieuws over '+name+'</div></div><span style="margin-left:auto;color:var(--accent)">&#8599;</span></a>'
-    +'<a href="https://www.wielerflits.nl/?s='+encodeURIComponent(name)+'" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);padding:14px 18px;border-radius:4px;text-decoration:none">'
-    +'<span style="font-size:22px">&#128690;</span><div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">Wielerflits</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Nederlandstalig wielrennen nieuws</div></div><span style="margin-left:auto;color:var(--accent)">&#8599;</span></a>'
-    +'<a href="https://www.procyclingstats.com/rider/'+slug+'" target="_blank" style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);padding:14px 18px;border-radius:4px;text-decoration:none">'
-    +'<span style="font-size:22px">&#128202;</span><div><div style="font-family:\'Barlow Condensed\',sans-serif;font-size:15px;font-weight:600;color:var(--text);letter-spacing:1px">ProcyclingStats</div><div style="font-size:12px;color:var(--muted);margin-top:2px">Statistieken & profiel</div></div><span style="margin-left:auto;color:var(--accent)">&#8599;</span></a>'
-    +'</div>');
-};
-
-// STARTERS
-function nameTokens(name) {
-  return (name || "")
+function normalizeText(s) {
+  return (s || "")
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/['’.-]/g, " ")
     .replace(/[^a-z\s]/g, " ")
-    .split(/\s+/)
-    .filter(Boolean);
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function uniqueNames(arr) {
-  return [...new Set(arr.map(v => (v || "").trim()).filter(Boolean))];
+function riderTokens(name) {
+  return normalizeText(name).split(" ").filter(Boolean);
 }
 
-function isSameRider(startlistName, teamName) {
-  const startTokens = new Set(nameTokens(startlistName));
-  const teamTokens = nameTokens(teamName);
+function riderAppearsOnPage(riderName, pageText) {
+  const rider = riderTokens(riderName);
+  if (rider.length < 2) return false;
 
-  if (teamTokens.length < 2) return false;
-
-  return teamTokens.every(token => startTokens.has(token));
+  const text = " " + normalizeText(pageText) + " ";
+  return rider.every(token => text.includes(" " + token + " "));
 }
 
-function extractFirstCyclingNames(html) {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const anchors = [...doc.querySelectorAll('a[href*="rider.php?id="]')];
-
-  return uniqueNames(
-    anchors
-      .map(a => a.textContent.trim())
-      .filter(name => nameTokens(name).length >= 2)
-  );
-}
-
-function extractPCSNames(html) {
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  const anchors = [...doc.querySelectorAll('a[href*="/rider/"]')];
-
-  return uniqueNames(
-    anchors
-      .map(a => a.textContent.trim())
-      .filter(name =>
-        nameTokens(name).length >= 2 &&
-        !/\d/.test(name) &&
-        name.length <= 40
-      )
-  );
-}
-
-async function fetchText(url, timeoutMs = 12000) {
+async function fetchOfficialPageText(url, timeoutMs = 12000) {
   const proxies = [
     "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
     "https://corsproxy.io/?" + encodeURIComponent(url),
@@ -694,15 +631,25 @@ async function fetchText(url, timeoutMs = 12000) {
       const resp = await fetch(proxy, { signal: AbortSignal.timeout(timeoutMs) });
       if (!resp.ok) continue;
 
-      let text = "";
+      let raw = "";
       if (proxy.includes("/get?url=")) {
         const json = await resp.json();
-        text = json.contents || "";
+        raw = json.contents || "";
       } else {
-        text = await resp.text();
+        raw = await resp.text();
       }
 
-      if (text && text.length > 1000) return text;
+      if (!raw || raw.length < 200) continue;
+
+      const isHtml = raw.includes("<html") || raw.includes("<body") || raw.includes("<table") || raw.includes("<div");
+
+      if (isHtml) {
+        const doc = new DOMParser().parseFromString(raw, "text/html");
+        const text = doc.body ? doc.body.innerText : raw.replace(/<[^>]+>/g, " ");
+        if (text && text.length > 100) return text;
+      } else {
+        return raw;
+      }
     } catch (e) {
       // probeer volgende proxy
     }
@@ -711,78 +658,55 @@ async function fetchText(url, timeoutMs = 12000) {
   return null;
 }
 
-async function getStartlistNames(raceName, year) {
-  const fcId = FC[raceName];
-  const pcsSlug =
-    PCS[raceName] ||
-    raceName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
-
-  const sources = [];
-
-  if (fcId) {
-    sources.push({
-      label: "FirstCycling",
-      url: `https://firstcycling.com/race.php?r=${fcId}&y=${year}&k=start`,
-      extract: extractFirstCyclingNames
-    });
-  }
-
-  sources.push({
-    label: "ProCyclingStats",
-    url: `https://www.procyclingstats.com/race/${pcsSlug}/${year}/startlist`,
-    extract: extractPCSNames
-  });
-
-  for (const source of sources) {
-    const html = await fetchText(source.url);
-    if (!html) continue;
-
-    const names = source.extract(html);
-    if (names.length) {
-      return {
-        source: source.label,
-        url: source.url,
-        names
-      };
-    }
-  }
-
-  return null;
+function officialStartlistUrl(race) {
+  return race?.startlistUrl || "";
 }
 
 window.checkS = async function(raceId, raceName) {
-  const year = 2026;
+  const race = (S.races || []).find(r => r.id === raceId);
 
-  openModal(
-    "&#128690; Starters: " + raceName,
-    '<div class="loading"><div class="spin"></div>Startlijst ophalen...</div>'
-  );
-
-  const startlist = await getStartlistNames(raceName, year);
-
-  if (!startlist) {
-    document.getElementById("modal-body").innerHTML =
-      '<div class="empty">De startlijst kon niet automatisch worden opgehaald.</div>';
+  if (!race) {
+    openModal("Startlijst", '<div class="empty">Wedstrijd niet gevonden.</div>');
     return;
   }
 
-  const mine = allR();
-  const starters = mine.filter(m =>
-    startlist.names.some(n => isSameRider(n, m.name))
+  const url = officialStartlistUrl(race);
+
+  if (!url) {
+    openModal(
+      "&#128690; Starters: " + race.name,
+      '<div class="empty">Geen officiële startlijst-URL ingevuld bij deze wedstrijd.</div>'
+    );
+    return;
+  }
+
+  openModal(
+    "&#128690; Starters: " + race.name,
+    '<div class="loading"><div class="spin"></div>Officiële startlijst ophalen...</div>'
   );
 
+  const pageText = await fetchOfficialPageText(url);
+
+  if (!pageText) {
+    document.getElementById("modal-body").innerHTML =
+      '<div style="display:flex;flex-direction:column;gap:14px">'
+      + '<div class="empty" style="padding:10px 0 0;text-align:left">De officiële startlijst kon niet automatisch worden uitgelezen.</div>'
+      + '<a href="' + url + '" target="_blank" style="display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:#000;padding:10px 16px;font-family:\'Barlow Condensed\',sans-serif;font-weight:700;letter-spacing:2px;font-size:13px;border-radius:3px;text-decoration:none;width:max-content">&#8599; Open officiële startlijst</a>'
+      + '</div>';
+    return;
+  }
+
+  const starters = allR().filter(r => riderAppearsOnPage(r.name, pageText));
   starters.sort((a, b) => a.team - b.team || a.name.localeCompare(b.name));
 
   let out =
     '<div style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:4px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">'
-    + '<span style="font-size:12px;color:var(--muted)">'
-    + startlist.source + ' &mdash; ' + startlist.names.length + ' renners gevonden'
-    + '</span>'
-    + '<a href="' + startlist.url + '" target="_blank" style="color:var(--accent);font-size:12px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">&#8599; Open startlijst</a>'
+    + '<span style="font-size:12px;color:var(--muted)">Bron: officiële wedstrijdsite</span>'
+    + '<a href="' + url + '" target="_blank" style="color:var(--accent);font-size:12px;font-family:\'Barlow Condensed\',sans-serif;letter-spacing:1px">&#8599; Open officiële startlijst</a>'
     + '</div>';
 
   if (!starters.length) {
-    out += '<div class="empty">Geen van jouw renners staat op de startlijst.</div>';
+    out += '<div class="empty">Geen van jouw renners is gevonden op de officiële startlijst.</div>';
     document.getElementById("modal-body").innerHTML = out;
     return;
   }
@@ -790,7 +714,7 @@ window.checkS = async function(raceId, raceName) {
   out +=
     '<p style="font-size:13px;color:var(--muted);margin-bottom:12px">'
     + '<strong style="color:var(--accent);font-size:18px">' + starters.length + '</strong> '
-    + 'van jouw renners starten in ' + raceName + ':'
+    + 'van jouw renners staan op de officiële startlijst:'
     + '</p>';
 
   out += '<div class="slist">';
@@ -804,86 +728,6 @@ window.checkS = async function(raceId, raceName) {
   out += '</div>';
 
   document.getElementById("modal-body").innerHTML = out;
-};
-
-// NEWS
-async function fetchRSS(name) {
-  if (ncache[name] !== undefined) return ncache[name];
-  const parts = name.trim().split(/\s+/);
-  const q = encodeURIComponent('"'+parts.slice(0,2).join(" ")+'" wielrenner when:14d');
-  const proxy = "https://api.allorigins.win/get?url="+encodeURIComponent("https://news.google.com/rss/search?q="+q+"&hl=nl&gl=NL&ceid=NL:nl");
-  try {
-    const resp = await fetch(proxy, {signal:AbortSignal.timeout(8000)});
-    if (!resp.ok) throw new Error("fail");
-    const j = await resp.json();
-    const doc = new DOMParser().parseFromString(j.contents||"","text/xml");
-    const articles = [...doc.querySelectorAll("item")].slice(0,4).map(item => {
-      const title = (item.querySelector("title")?.textContent||"").replace(/ - [^-]+$/,"").trim();
-      const link = item.querySelector("link")?.textContent||"";
-      const src = item.querySelector("source")?.textContent||"";
-      let date = "";
-      try { date = new Date(item.querySelector("pubDate")?.textContent||"").toLocaleDateString("nl-NL",{day:"numeric",month:"short"}); } catch(e){}
-      return {title,link,date,src};
-    });
-    ncache[name] = articles;
-    return articles;
-  } catch(e) {
-    ncache[name] = null;
-    return null;
-  }
-}
-
-function newsCard(name, articles, team) {
-  const parts = name.split(/\s+/);
-  const dn = parts.length > 1 ? parts.slice(1).join(" ")+" "+parts[0] : name;
-  let body = "";
-  if (articles === null) body = '<div class="nempty">&#9888; Kon nieuws niet laden</div>';
-  else if (!articles.length) body = '<div class="nempty">Geen nieuws gevonden in de afgelopen 2 weken</div>';
-  else body = articles.map(a => '<div class="nart"><a href="'+a.link+'" target="_blank" rel="noopener">'+a.title+'</a><span class="nmet">'+a.date+(a.src?" &middot; "+a.src:"")+'</span></div>').join("");
-  return '<div class="ncard" data-team="'+team+'" id="nc_'+name.replace(/[^a-zA-Z]/g,"_")+'"><div class="nhead t'+team+'"><span class="nrider">'+dn+'</span><span class="nteam">TEAM '+team+'</span></div><div>'+body+'</div></div>';
-}
-
-window.loadNews = async function() {
-  const grid = document.getElementById("news-grid");
-  const status = document.getElementById("news-status");
-  const btn = document.getElementById("news-btn");
-  const riders = allR();
-  if (!riders.length) {
-    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">Geen renners gevonden.</div>';
-    return;
-  }
-  btn.disabled = true;
-  btn.innerHTML = "Laden...";
-  status.style.display = "block";
-  status.textContent = "Bezig met laden...";
-  grid.innerHTML = "";
-  riders.forEach(item => {
-    const parts = item.name.split(/\s+/);
-    const dn = parts.length > 1 ? parts.slice(1).join(" ")+" "+parts[0] : item.name;
-    grid.innerHTML += '<div class="ncard" data-team="'+item.team+'" id="nc_'+item.name.replace(/[^a-zA-Z]/g,"_")+'"><div class="nhead t'+item.team+'"><span class="nrider">'+dn+'</span><span class="nteam">TEAM '+item.team+'</span></div><div class="nload"><div class="spin"></div>Laden...</div></div>';
-  });
-  let done = 0;
-  for (let i = 0; i < riders.length; i += 4) {
-    await Promise.all(riders.slice(i,i+4).map(async item => {
-      const articles = await fetchRSS(item.name);
-      done++;
-      status.textContent = "Laden... "+done+"/"+riders.length+" ("+item.name+")";
-      const card = document.getElementById("nc_"+item.name.replace(/[^a-zA-Z]/g,"_"));
-      if (card) card.outerHTML = newsCard(item.name, articles, item.team);
-    }));
-    if (i+4 < riders.length) await new Promise(r => setTimeout(r,300));
-  }
-  status.style.display = "none";
-  btn.disabled = false;
-  btn.innerHTML = "&#128260; Vernieuwen (laatste 2 weken)";
-  filterNews();
-};
-
-window.filterNews = function() {
-  const f = document.getElementById("nf")?.value || "0";
-  document.querySelectorAll("#news-grid .ncard").forEach(c => {
-    c.classList.toggle("nhide", f !== "0" && c.dataset.team !== f);
-  });
 };
 
 initDB();
